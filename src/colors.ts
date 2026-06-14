@@ -5,6 +5,7 @@ import type { Flight } from "./types";
 export const PHASE_COLORS = {
   thermal: "#ff7043", // warm orange
   glide: "#42a5f5", // blue
+  badturn: "#a78bfa", // violet — wasted circling
 } as const;
 
 /** Vario → colour buckets (m/s thresholds), cool = sink, warm = climb. */

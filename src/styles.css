@@ -11,7 +11,9 @@
   --accent: #42a5f5;
   --thermal: #ff7043;
   --glide: #42a5f5;
+  --badturn: #a78bfa;
   --climb: #34d399;
+  --sink: #f87171;
   --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
   --radius: 14px;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
@@ -402,12 +404,28 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  align-items: start;
+}
+.table-card.wide {
+  grid-column: 1 / -1;
 }
 .table-card {
   overflow: hidden;
 }
 .table-scroll {
   overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+.table-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
 table {
   width: 100%;
@@ -421,12 +439,12 @@ thead th {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  padding: 9px 10px;
+  padding: 9px 7px;
   border-bottom: 1px solid var(--border-soft);
   white-space: nowrap;
 }
 tbody td {
-  padding: 9px 10px;
+  padding: 9px 7px;
   border-bottom: 1px solid var(--border-soft);
   white-space: nowrap;
 }
@@ -448,6 +466,10 @@ td.climb {
   color: var(--climb);
   font-weight: 600;
 }
+td.sink {
+  color: var(--sink);
+  font-weight: 600;
+}
 td.glide-ratio {
   font-weight: 600;
 }
@@ -455,8 +477,40 @@ td.glide-ratio {
   margin-left: 4px;
   color: var(--thermal);
 }
-.course {
+.turn-dir.bad {
+  color: var(--badturn);
+}
+.course-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-weight: 600;
+  color: var(--text);
+}
+.course-badge svg {
+  color: var(--text-dim);
+}
+.vs-wind {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-weight: 600;
+}
+.vs-wind .rel {
+  font-weight: 400;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+.vs-wind.tail {
+  color: var(--climb);
+}
+.vs-wind.head {
+  color: var(--sink);
+}
+.vs-wind.cross {
+  color: var(--text-dim);
 }
 .empty {
   padding: 20px 16px;

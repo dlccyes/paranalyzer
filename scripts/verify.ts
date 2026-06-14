@@ -59,13 +59,22 @@ for (const [i, t] of f.thermals.entries()) {
   );
 }
 
+console.log(`\n=== BAD TURNS (${f.badTurns.length}) ===`);
+for (const [i, t] of f.badTurns.entries()) {
+  console.log(
+    `#${i + 1}  ${formatDuration(t.duration)}  turns=${t.turns.toFixed(1)} ${
+      t.direction === 1 ? "R" : "L"
+    }  alt=${t.altChange.toFixed(0)}m @ ${ms(t.climbRate)}  r=${t.avgRadius.toFixed(0)}m`,
+  );
+}
+
 console.log(`\n=== GLIDES (${f.glides.length}) ===`);
 for (const [i, g] of f.glides.entries()) {
   console.log(
     `#${i + 1}  ${formatDuration(g.duration)}  ${compassName(g.course)} ${g.course.toFixed(
       0,
-    )}°  ${km(g.trackDistance)}  gs=${(g.groundSpeed * 3.6).toFixed(1)}km/h  GR=${
-      g.glideRatio ? g.glideRatio.toFixed(1) : "—"
-    }`,
+    )}°  ${km(g.trackDistance)}  gs=${(g.groundSpeed * 3.6).toFixed(1)}km/h  sink=${g.totalSink.toFixed(
+      0,
+    )}m @ ${ms(g.avgSinkRate)}  GR=${g.glideRatio ? g.glideRatio.toFixed(1) : "—"}`,
   );
 }

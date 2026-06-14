@@ -8,6 +8,7 @@ import { SummaryPanel } from "./components/SummaryPanel";
 import { FlightMap } from "./components/FlightMap";
 import { Barogram } from "./components/Barogram";
 import { ThermalsTable } from "./components/ThermalsTable";
+import { BadTurnsTable } from "./components/BadTurnsTable";
 import { GlidesTable } from "./components/GlidesTable";
 import { UnitToggle } from "./components/UnitToggle";
 
@@ -108,6 +109,14 @@ export default function App() {
           <div className="tables">
             <ThermalsTable
               thermals={flight.thermals}
+              fmt={fmt}
+              tz={flight.meta.tzOffsetMinutes ?? 0}
+              selected={selected}
+              onSelect={setSelected}
+              onHover={setHovered}
+            />
+            <BadTurnsTable
+              badTurns={flight.badTurns}
               fmt={fmt}
               tz={flight.meta.tzOffsetMinutes ?? 0}
               selected={selected}

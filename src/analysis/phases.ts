@@ -1,4 +1,4 @@
-import type { Derived, Fix, Glide, Phase, Thermal } from "../types";
+import type { BadTurn, Derived, Fix, Glide, Phase, Thermal } from "../types";
 import { angleDiff, bearing, haversine } from "./geo";
 import { estimateWind } from "./wind";
 
@@ -16,6 +16,10 @@ export const PARAMS = {
   minSignificantTurns: 0.75,
   /** A listed ("well-formed") thermal needs at least this many full turns. */
   wellFormedTurns: 3,
+  /** Net vertical rate (m/s) above which a circling run counts as climbing. */
+  climbThresholdMs: 0.1,
+  /** A "bad turn" needs strictly more than this many full turns (not climbing). */
+  badTurnMinTurns: 1,
   /** A listed glide must last at least this long, seconds. */
   minGlideSec: 20,
   /** ...and cover at least this straight-line distance, metres. */
@@ -32,6 +36,7 @@ interface CirclingRun {
 
 export interface PhaseResult {
   thermals: Thermal[];
+  badTurns: BadTurn[];
   glides: Glide[];
   phases: Phase[];
 }
@@ -52,10 +57,18 @@ export function detectPhases(
   // Runs that turn enough to genuinely interrupt a glide.
   const significant = runs.filter((r) => r.turns >= PARAMS.minSignificantTurns);
 
+  // Classify each circling run: a thermal climbs and has ≥3 turns; a "bad turn"
+  // does >1 turn without climbing.
   const thermals: Thermal[] = [];
+  const badTurns: BadTurn[] = [];
   for (const run of runs) {
-    if (run.turns < PARAMS.wellFormedTurns) continue;
-    thermals.push(buildThermal(fixes, derived, str, run));
+    const c = buildCircling(fixes, derived, str, run);
+    const climbing = c.climbRate > PARAMS.climbThresholdMs;
+    if (climbing && run.turns >= PARAMS.wellFormedTurns) {
+      thermals.push({ kind: "thermal", climb: c.altChange, ...c });
+    } else if (!climbing && run.turns > PARAMS.badTurnMinTurns) {
+      badTurns.push({ kind: "badturn", ...c });
+    }
   }
 
   // Glides: maximal gaps between significant circling runs.
@@ -74,11 +87,11 @@ export function detectPhases(
 
   assignGlideWinds(glides, thermals);
 
-  const phases: Phase[] = [...thermals, ...glides].sort(
+  const phases: Phase[] = [...thermals, ...badTurns, ...glides].sort(
     (x, y) => x.startIdx - y.startIdx,
   );
 
-  return { thermals, glides, phases };
+  return { thermals, badTurns, glides, phases };
 }
 
 /** Time-windowed moving average of the (signed) turn rate. */
@@ -143,15 +156,18 @@ function findCirclingRuns(
   });
 }
 
-function buildThermal(
+/** Shared metrics for a circling segment (a thermal or a bad turn). */
+type CirclingMetrics = Omit<Thermal, "kind" | "climb">;
+
+function buildCircling(
   fixes: Fix[],
   d: Derived,
   str: number[],
   run: CirclingRun,
-): Thermal {
+): CirclingMetrics {
   const { a, b } = run;
   const duration = d.t[b] - d.t[a];
-  const climb = fixes[b].alt - fixes[a].alt;
+  const altChange = fixes[b].alt - fixes[a].alt;
   const trackDistance = d.cumDist[b] - d.cumDist[a];
 
   // Average circling radius from r = v / ω over actively-circling fixes.
@@ -167,7 +183,6 @@ function buildThermal(
   const avgRadius = radCount ? radSum / radCount : 0;
 
   return {
-    kind: "thermal",
     startIdx: a,
     endIdx: b,
     startTime: fixes[a].time,
@@ -175,12 +190,11 @@ function buildThermal(
     duration,
     startAlt: fixes[a].alt,
     endAlt: fixes[b].alt,
-    altChange: climb,
+    altChange,
     trackDistance,
     straightDistance: haversine(fixes[a].lat, fixes[a].lon, fixes[b].lat, fixes[b].lon),
     turns: run.turns,
-    climb,
-    climbRate: duration > 0 ? climb / duration : 0,
+    climbRate: duration > 0 ? altChange / duration : 0,
     avgRadius,
     direction: run.direction,
     wind: estimateWind(d, a, b),
@@ -220,6 +234,8 @@ function maybePushGlide(
     straightDistance,
     course: bearing(fixes[a].lat, fixes[a].lon, fixes[b].lat, fixes[b].lon),
     groundSpeed: duration > 0 ? trackDistance / duration : 0,
+    totalSink: altLost,
+    avgSinkRate: duration > 0 ? altLost / duration : 0,
     glideRatio: altLost > 1 ? trackDistance / altLost : null,
     wind: null,
   });

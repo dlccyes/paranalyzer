@@ -1,7 +1,8 @@
-import type { Glide, Phase } from "../types";
-import { compassName } from "../analysis/geo";
+import type { Glide, Phase, WindEstimate } from "../types";
+import { angleDiff, compassName } from "../analysis/geo";
 import { formatClock, formatDuration, type UnitFormatter } from "../units";
 import { WindBadge } from "./WindBadge";
+import { Arrow } from "./Arrow";
 
 interface Props {
   glides: Glide[];
@@ -10,6 +11,29 @@ interface Props {
   selected: Phase | null;
   onSelect: (p: Phase | null) => void;
   onHover: (p: Phase | null) => void;
+}
+
+/**
+ * Angle between the glide course and the wind (0° = pure tailwind,
+ * 180° = pure headwind). Returns null when there is no wind estimate.
+ */
+function windAngle(course: number, wind: WindEstimate | null): number | null {
+  if (!wind) return null;
+  const windToward = (wind.fromDeg + 180) % 360; // direction the air moves
+  return Math.abs(angleDiff(course, windToward));
+}
+
+function relationLabel(angle: number): string {
+  if (angle <= 45) return "tail";
+  if (angle >= 135) return "head";
+  return "cross";
+}
+
+/** Colour class for a sink value: red when sinking, green when climbing. */
+function sinkClass(sink: number): string {
+  if (sink > 1) return "sink";
+  if (sink < -1) return "climb";
+  return "";
 }
 
 /** Table of straight-line glides between thermals. */
@@ -22,7 +46,7 @@ export function GlidesTable({
   onHover,
 }: Props) {
   return (
-    <div className="card table-card">
+    <div className="card table-card wide">
       <div className="panel-title">
         Glides <span className="count">{glides.length}</span>
         <span className="panel-hint">straight lines</span>
@@ -40,42 +64,72 @@ export function GlidesTable({
                 <th>Course</th>
                 <th>Dist</th>
                 <th>Speed</th>
+                <th>Sink</th>
+                <th>Sink rate</th>
                 <th>Glide</th>
                 <th>Wind</th>
+                <th title="Angle between course and wind (0° = tailwind)">
+                  vs wind
+                </th>
               </tr>
             </thead>
             <tbody onMouseLeave={() => onHover(null)}>
-              {glides.map((g, i) => (
-                <tr
-                  key={i}
-                  className={selected === g ? "row-selected" : ""}
-                  onClick={() => onSelect(selected === g ? null : g)}
-                  onMouseEnter={() => onHover(g)}
-                >
-                  <td className="dim">{i + 1}</td>
-                  <td>{formatClock(g.startTime, tz)}</td>
-                  <td>{formatDuration(g.duration)}</td>
-                  <td>
-                    <span className="course">{compassName(g.course)}</span>{" "}
-                    <span className="dim">{Math.round(g.course)}°</span>
-                  </td>
-                  <td>{fmt.distance(g.trackDistance)}</td>
-                  <td>{fmt.speed(g.groundSpeed)}</td>
-                  <td className="glide-ratio">
-                    {g.glideRatio != null ? `${g.glideRatio.toFixed(1)}:1` : "—"}
-                  </td>
-                  <td className="wind-cell">
-                    {g.wind ? (
-                      <span className="wind-inline">
-                        <WindBadge wind={g.wind} fmt={fmt} size={16} showLabel={false} />
-                        {compassName(g.wind.fromDeg)} {fmt.speed(g.wind.speed, 0)}
+              {glides.map((g, i) => {
+                const angle = windAngle(g.course, g.wind);
+                return (
+                  <tr
+                    key={i}
+                    className={selected === g ? "row-selected" : ""}
+                    onClick={() => onSelect(selected === g ? null : g)}
+                    onMouseEnter={() => onHover(g)}
+                  >
+                    <td className="dim">{i + 1}</td>
+                    <td>{formatClock(g.startTime, tz)}</td>
+                    <td>{formatDuration(g.duration)}</td>
+                    <td>
+                      <span className="course-badge">
+                        <Arrow
+                          deg={g.course}
+                          size={16}
+                          title={`Course ${Math.round(g.course)}°`}
+                        />
+                        {compassName(g.course)}
                       </span>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td>{fmt.distance(g.trackDistance)}</td>
+                    <td>{fmt.speed(g.groundSpeed)}</td>
+                    <td className={sinkClass(g.totalSink)}>
+                      {fmt.altitude(g.totalSink)}
+                    </td>
+                    <td className={sinkClass(g.totalSink)}>
+                      {fmt.vario(g.avgSinkRate)}
+                    </td>
+                    <td className="glide-ratio">
+                      {g.glideRatio != null ? `${g.glideRatio.toFixed(1)}:1` : "—"}
+                    </td>
+                    <td className="wind-cell">
+                      {g.wind ? (
+                        <span className="wind-inline">
+                          <WindBadge wind={g.wind} fmt={fmt} size={16} showLabel={false} />
+                          {compassName(g.wind.fromDeg)} {fmt.speed(g.wind.speed, 0)}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      {angle != null ? (
+                        <span className={`vs-wind ${relationLabel(angle)}`}>
+                          {Math.round(angle)}°{" "}
+                          <span className="rel">{relationLabel(angle)}</span>
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

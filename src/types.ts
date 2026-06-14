@@ -56,7 +56,7 @@ export interface Derived {
   vn: number[];
 }
 
-export type PhaseKind = "thermal" | "glide";
+export type PhaseKind = "thermal" | "glide" | "badturn";
 
 interface PhaseBase {
   kind: PhaseKind;
@@ -94,12 +94,31 @@ export interface Thermal extends PhaseBase {
   wind: WindEstimate | null;
 }
 
+/**
+ * A "bad turn": more than one full 360° turn while NOT climbing — i.e. circling
+ * that burns altitude/time without gaining. Same shape as a thermal but the
+ * altitude change ({@link PhaseBase.altChange}) is zero or negative.
+ */
+export interface BadTurn extends PhaseBase {
+  kind: "badturn";
+  turns: number;
+  /** Average vertical rate over the segment, m/s (≤ climb threshold). */
+  climbRate: number;
+  avgRadius: number;
+  direction: 1 | -1;
+  wind: WindEstimate | null;
+}
+
 export interface Glide extends PhaseBase {
   kind: "glide";
   /** Overall course start→end in degrees [0,360). */
   course: number;
   /** Average ground speed in m/s (trackDistance / duration). */
   groundSpeed: number;
+  /** Altitude lost over the glide in metres (negative if the glide climbed). */
+  totalSink: number;
+  /** Average sink rate in m/s: positive = sinking, negative = climbing. */
+  avgSinkRate: number;
   /**
    * Ground glide ratio = horizontal track distance / altitude lost.
    * Null when the segment gained altitude overall (no meaningful glide).
@@ -109,7 +128,7 @@ export interface Glide extends PhaseBase {
   wind: WindEstimate | null;
 }
 
-export type Phase = Thermal | Glide;
+export type Phase = Thermal | Glide | BadTurn;
 
 /** Estimated wind, meteorological convention (direction wind blows FROM). */
 export interface WindEstimate {
@@ -152,7 +171,9 @@ export interface Flight {
   stats: FlightStats;
   thermals: Thermal[];
   glides: Glide[];
-  /** Thermals and glides interleaved in chronological order. */
+  /** Circling that wastes height/time (>1 turn, not climbing). */
+  badTurns: BadTurn[];
+  /** All phases interleaved in chronological order. */
   phases: Phase[];
   /** Airborne range [takeoff, landing] as inclusive fix indices. */
   range: [number, number];

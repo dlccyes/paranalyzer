@@ -14,10 +14,14 @@ upload, no backend, your track never leaves your device.
   device's timezone), airtime, max altitude, max altitude gain, max sustained
   climb/sink, track length, straight-line distance, open ("free") distance and
   average ground speed.
-- **Thermals** (well-formed = **≥ 3 turns**): number of turns + direction, total
-  climb, average climb rate, average circling radius, and per-thermal wind.
-- **Glides** (straight lines): general course, ground distance, ground speed,
-  **ground glide ratio**, and the wind that applied.
+- **Thermals** (well-formed = **≥ 3 turns and climbing**): number of turns +
+  direction, total climb, average climb rate, average circling radius, and
+  per-thermal wind.
+- **Bad turns**: circling that wastes height/time — more than one full turn
+  **without climbing** — with turns, altitude lost and sink rate.
+- **Glides** (straight lines): course (as an arrow) + the **angle to the wind**
+  (0° = tailwind), ground distance, ground speed, **total sink**, **average sink
+  rate**, **ground glide ratio**, and the wind that applied.
 - **Wind estimation** from the GPS ground-velocity circle traced while
   thermalling (Kåsa circle fit) — per thermal and overall.
 - **Interactive map** (Leaflet / OpenStreetMap) with the track coloured by
@@ -87,6 +91,26 @@ Validated against the XContest figures for the sample flight:
 > (track length ÷ airtime). XContest's `ø` is an XC-distance-based speed, so the
 > two numbers differ by design. XContest's proprietary "route / points" scoring
 > is not reproduced.
+
+## Deployment
+
+CI lives in `.github/workflows/`:
+
+- **`test.yml`** ("Test") runs on every push / PR to `main`: install, type-check,
+  build.
+- **`gh-deploy.yml`** runs after "Test" succeeds on `main`, builds, and publishes
+  `dist/` to the `gh-pages` branch via
+  [`JamesIves/github-pages-deploy-action`](https://github.com/JamesIves/github-pages-deploy-action),
+  writing a `CNAME` for **paranalyzer.approximator.net**.
+
+One-time setup on GitHub:
+
+1. **Settings → Pages → Source:** *Deploy from a branch* → `gh-pages` / `root`.
+2. **DNS** (at `approximator.net`): add a `CNAME` record
+   `paranalyzer` → `dlccyes.github.io`.
+3. Tick **Enforce HTTPS** once the certificate is issued.
+
+The Vite `base` is relative, so the same build also works from a subpath.
 
 ## Tech
 
