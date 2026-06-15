@@ -1,6 +1,6 @@
-import { parseTrack, analyzeFlight, buildFlightRecord } from "@paranalyzer/core";
+import { parseTrack, buildFlightRecord } from "@paranalyzer/core";
 import { listFlights, updateFlight, getSettings } from "./db";
-import { analyzeOptions } from "./model";
+import { analyzeWithSettings } from "./analyze";
 import { readTrack } from "./trackStore";
 
 export interface RecalcResult {
@@ -14,7 +14,7 @@ export interface RecalcResult {
  */
 export async function recalcAll(onProgress?: (done: number, total: number) => void): Promise<RecalcResult> {
   const flights = listFlights();
-  const opts = analyzeOptions(await getSettings());
+  const settings = await getSettings();
   let updated = 0;
   let failed = 0;
 
@@ -23,7 +23,7 @@ export async function recalcAll(onProgress?: (done: number, total: number) => vo
     try {
       const text = await readTrack(rec.trackRef);
       const parsed = parseTrack(rec.fileName ?? `flight.${rec.source}`, text);
-      const analysed = analyzeFlight(parsed, opts);
+      const analysed = await analyzeWithSettings(parsed, settings);
       const recomputed = buildFlightRecord(parsed, analysed, {
         id: rec.id,
         trackRef: rec.trackRef,

@@ -7,7 +7,7 @@ const DEG = Math.PI / 180;
 export const PARAMS = {
   turnSmoothHalfSec: 4,
   circlingThresholdDegPerSec: 6,
-  bridgeGapSec: 8,
+  bridgeGapSec: 10,
   minSignificantTurns: 0.75,
   /** Minimum turns for a climbing circle to count as a thermal. Configurable. */
   thermalMinTurns: 1,
@@ -20,9 +20,7 @@ export const PARAMS = {
 interface CirclingRun {
   a: number;
   b: number;
-  signedTurn: number;
   turns: number;
-  direction: 1 | -1;
 }
 
 export interface CirclingResult {
@@ -46,9 +44,10 @@ export function detectCircling(
   startIdx: number,
   endIdx: number,
   thermalMinTurns: number = PARAMS.thermalMinTurns,
+  bridgeGapSec: number = PARAMS.bridgeGapSec,
 ): CirclingResult {
   const str = smoothTurnRate(derived, startIdx, endIdx);
-  const runs = findCirclingRuns(derived, str, startIdx, endIdx);
+  const runs = findCirclingRuns(derived, str, startIdx, endIdx, bridgeGapSec);
 
   const significant = runs.filter((r) => r.turns >= PARAMS.minSignificantTurns);
 
@@ -111,9 +110,10 @@ export function detectPhases(
   startIdx: number,
   endIdx: number,
   thermalMinTurns: number = PARAMS.thermalMinTurns,
+  bridgeGapSec: number = PARAMS.bridgeGapSec,
 ): PhaseResult {
   const { thermals, badTurns, significantIntervals } =
-    detectCircling(fixes, derived, startIdx, endIdx, thermalMinTurns);
+    detectCircling(fixes, derived, startIdx, endIdx, thermalMinTurns, bridgeGapSec);
   const glides = detectGlides(fixes, derived, startIdx, endIdx, significantIntervals, thermals);
 
   const phases: Phase[] = [...thermals, ...badTurns, ...glides].sort(
@@ -143,6 +143,7 @@ function findCirclingRuns(
   str: number[],
   s: number,
   e: number,
+  bridgeGapSec: number,
 ): CirclingRun[] {
   const thr = PARAMS.circlingThresholdDegPerSec;
   const raw: { a: number; b: number }[] = [];
@@ -160,9 +161,7 @@ function findCirclingRuns(
   const merged: { a: number; b: number }[] = [];
   for (const run of raw) {
     const last = merged[merged.length - 1];
-    const sameDir =
-      last && Math.sign(avg(str, last.a, last.b)) === Math.sign(avg(str, run.a, run.b));
-    if (last && sameDir && d.t[run.a] - d.t[last.b] < PARAMS.bridgeGapSec) {
+    if (last && d.t[run.a] - d.t[last.b] <= bridgeGapSec) {
       last.b = run.b;
     } else {
       merged.push({ ...run });
@@ -170,14 +169,12 @@ function findCirclingRuns(
   }
 
   return merged.map(({ a: ra, b: rb }) => {
-    let signed = 0;
-    for (let i = ra + 1; i <= rb; i++) signed += angleDiff(d.bearing[i - 1], d.bearing[i]);
+    let total = 0;
+    for (let i = ra + 1; i <= rb; i++) total += Math.abs(angleDiff(d.bearing[i - 1], d.bearing[i]));
     return {
       a: ra,
       b: rb,
-      signedTurn: signed,
-      turns: Math.abs(signed) / 360,
-      direction: signed >= 0 ? 1 : -1,
+      turns: total / 360,
     };
   });
 }
@@ -220,7 +217,6 @@ function buildCircling(
     turns: run.turns,
     climbRate: duration > 0 ? altChange / duration : 0,
     avgRadius,
-    direction: run.direction,
     wind: estimateWind(d, a, b),
   };
 }
@@ -282,10 +278,4 @@ function assignGlideWinds(glides: Glide[], thermals: Thermal[]): void {
     }
     g.wind = best?.wind ?? null;
   }
-}
-
-function avg(arr: number[], a: number, b: number): number {
-  let s = 0;
-  for (let i = a; i <= b; i++) s += arr[i];
-  return s / Math.max(1, b - a + 1);
 }

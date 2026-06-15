@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { AnyPhase, Flight, Phase } from "@paranalyzer/core";
 import { makeFormatter, type UnitSystem } from "@paranalyzer/core";
 import { SummaryPanel } from "./components/SummaryPanel";
@@ -15,9 +15,22 @@ export interface AnalysisViewProps {
   units?: UnitSystem;
   onUnitsChange?: (u: UnitSystem) => void;
   dateFormat?: "dmy" | "ymd";
+  thermalMinTurns?: number;
+  thermalBridgeGapSec?: number;
+  ridgeBridgeGapSec?: number;
+  summarySlot?: ReactNode;
 }
 
-export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateFormat = "dmy" }: AnalysisViewProps) {
+export function AnalysisView({
+  flight,
+  units: unitsProp,
+  onUnitsChange,
+  dateFormat = "dmy",
+  thermalMinTurns,
+  thermalBridgeGapSec,
+  ridgeBridgeGapSec,
+  summarySlot,
+}: AnalysisViewProps) {
   const [unitsLocal, setUnitsLocal] = useState<UnitSystem>(
     () => (localStorage.getItem("paranalyzer.units") as UnitSystem) || "metric",
   );
@@ -51,7 +64,7 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
       <div className="dashboard-header">
         <UnitToggle value={units} onChange={changeUnits} />
       </div>
-      <SummaryPanel flight={flight} fmt={fmt} dateFormat={dateFormat} />
+      <SummaryPanel flight={flight} fmt={fmt} dateFormat={dateFormat}>{summarySlot}</SummaryPanel>
       <div ref={mapRef}>
         <FlightMap flight={flight} highlight={activePhase} zoomTo={selected} hoverIdx={hoverIdx} />
       </div>
@@ -69,6 +82,8 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
           fmt={fmt}
           tz={tz}
           selected={selected}
+          minTurns={thermalMinTurns}
+          bridgeGapSec={thermalBridgeGapSec}
           onSelect={selectPhase}
           onHover={hoverPhase}
         />
@@ -85,6 +100,7 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
           fmt={fmt}
           tz={tz}
           selected={selected}
+          bridgeGapSec={ridgeBridgeGapSec}
           onSelect={setSelected}
           onHover={setHovered}
         />

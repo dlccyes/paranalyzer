@@ -23,6 +23,7 @@ const COLUMNS = [
 export function BadTurnsTable({ badTurns, fmt, tz, selected, onSelect, onHover }: Props) {
   const { sorted, toggle, indicator } = useSortableRows(badTurns, COLUMNS);
   const origIndex = new Map(badTurns.map((t, i) => [t, i + 1]));
+  const totalDuration = badTurns.reduce((sum, t) => sum + t.duration, 0);
 
   const signedAlt = (m: number) =>
     `${m >= 0 ? "+" : "−"}${fmt.altitude(Math.abs(m))}`;
@@ -31,6 +32,7 @@ export function BadTurnsTable({ badTurns, fmt, tz, selected, onSelect, onHover }
     <div className="card table-card">
       <div className="panel-title">
         Bad turns <span className="count">{badTurns.length}</span>
+        <span className="count">{formatDuration(totalDuration)}</span>
         <span className="panel-hint">&gt;1 turn, no climb</span>
       </div>
       {badTurns.length === 0 ? (
@@ -60,10 +62,7 @@ export function BadTurnsTable({ badTurns, fmt, tz, selected, onSelect, onHover }
                   <td className="dim">{origIndex.get(t)}</td>
                   <td>{formatClock(t.startTime, tz)}</td>
                   <td>{formatDuration(t.duration)}</td>
-                  <td>
-                    {t.turns.toFixed(1)}
-                    <span className="turn-dir bad">{t.direction === 1 ? "↻" : "↺"}</span>
-                  </td>
+                  <td>{t.turns.toFixed(1)}</td>
                   <td className="sink">{signedAlt(t.altChange)}</td>
                   <td>{fmt.vario(t.climbRate)}</td>
                   <td>{fmt.smallDistance(t.avgRadius)}</td>

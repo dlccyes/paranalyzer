@@ -1,6 +1,6 @@
 import type { Flight, ParsedTrack } from "./types";
 
-export const ANALYSIS_VERSION = 2;
+export const ANALYSIS_VERSION = 3;
 
 export interface FlightRecord {
   id: string;
@@ -18,6 +18,7 @@ export interface FlightRecord {
 
   airtime: number;
   timeInThermal: number;
+  timeInGlide: number;
   timeInRidge: number;
 
   maxAlt: number;
@@ -66,6 +67,7 @@ export function buildFlightRecord(
 
     airtime: stats.airtime,
     timeInThermal: stats.timeInThermal,
+    timeInGlide: stats.timeInGlide,
     timeInRidge: stats.timeInRidge,
 
     maxAlt: stats.maxAlt,

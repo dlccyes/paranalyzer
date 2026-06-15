@@ -35,6 +35,7 @@ console.log("straight dist:", km(f.stats.straightDistance));
 console.log("free distance:", km(f.stats.freeDistance), "(~14.09 km)");
 console.log("avg speed:", (f.stats.avgSpeed * 3.6).toFixed(2), "km/h (8.93 km/h)");
 console.log("time in thermal:", formatDuration(f.stats.timeInThermal));
+console.log("time in glide:", formatDuration(f.stats.timeInGlide));
 console.log("time in ridge:", formatDuration(f.stats.timeInRidge));
 if (f.stats.wind) {
   console.log(
@@ -47,7 +48,7 @@ if (f.stats.wind) {
 console.log(`\n=== THERMALS (${f.thermals.length}) ===`);
 for (const [i, t] of f.thermals.entries()) {
   console.log(
-    `#${i + 1}  ${formatDuration(t.duration)}  turns=${t.turns.toFixed(1)} ${t.direction === 1 ? "R" : "L"}` +
+    `#${i + 1}  ${formatDuration(t.duration)}  turns=${t.turns.toFixed(1)}` +
     `  climb=${t.climb.toFixed(0)}m @ ${ms(t.climbRate)}  r=${t.avgRadius.toFixed(0)}m` +
     `  wind=${t.wind ? (t.wind.speed * 3.6).toFixed(0) + "km/h@" + t.wind.fromDeg.toFixed(0) : "n/a"}`,
   );
@@ -63,7 +64,7 @@ for (const [i, r] of f.ridgeSoars.entries()) {
 console.log(`\n=== BAD TURNS (${f.badTurns.length}) ===`);
 for (const [i, t] of f.badTurns.entries()) {
   console.log(
-    `#${i + 1}  ${formatDuration(t.duration)}  turns=${t.turns.toFixed(1)} ${t.direction === 1 ? "R" : "L"}` +
+    `#${i + 1}  ${formatDuration(t.duration)}  turns=${t.turns.toFixed(1)}` +
     `  alt=${t.altChange.toFixed(0)}m @ ${ms(t.climbRate)}`,
   );
 }

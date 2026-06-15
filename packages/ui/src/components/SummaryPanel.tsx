@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Flight } from "@paranalyzer/core";
 import {
   formatClock,
@@ -13,9 +14,10 @@ interface Props {
   flight: Flight;
   fmt: UnitFormatter;
   dateFormat?: "dmy" | "ymd";
+  children?: ReactNode;
 }
 
-export function SummaryPanel({ flight, fmt, dateFormat = "dmy" }: Props) {
+export function SummaryPanel({ flight, fmt, dateFormat = "dmy", children }: Props) {
   const { meta, stats } = flight;
   const tz = meta.tzOffsetMinutes ?? 0;
   const tzLabel = meta.tzOffsetMinutes != null ? formatTzOffset(tz) : "UTC";
@@ -50,6 +52,8 @@ export function SummaryPanel({ flight, fmt, dateFormat = "dmy" }: Props) {
           {stat("Airtime", formatDuration(stats.airtime, true))}
           {stat("Time in thermal", formatDurationHM(stats.timeInThermal),
             stats.airtime > 0 ? `${Math.round((stats.timeInThermal / stats.airtime) * 100)}% of airtime` : undefined)}
+          {stat("Time in glide", formatDurationHM(stats.timeInGlide),
+            stats.airtime > 0 ? `${Math.round((stats.timeInGlide / stats.airtime) * 100)}% of airtime` : undefined)}
           {stat("Time in ridge soaring", formatDurationHM(stats.timeInRidge),
             stats.airtime > 0 ? `${Math.round((stats.timeInRidge / stats.airtime) * 100)}% of airtime` : undefined)}
           {stat("Max altitude", fmt.altitude(stats.maxAlt))}
@@ -67,6 +71,7 @@ export function SummaryPanel({ flight, fmt, dateFormat = "dmy" }: Props) {
           )}
         </div>
       </div>
+      {children}
     </section>
   );
 }

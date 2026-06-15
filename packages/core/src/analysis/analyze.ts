@@ -8,6 +8,8 @@ import { detectRidgeSoaring } from "./ridge";
 export interface AnalyzeOptions {
   /** Bridge ridge runs separated by less than this many seconds. */
   ridgeBridgeGapSec?: number;
+  /** Bridge thermal/circling runs separated by this many seconds or less. */
+  thermalBridgeGapSec?: number;
   /** Minimum number of turns for a climbing circling run to count as a thermal. */
   thermalMinTurns?: number;
 }
@@ -20,7 +22,7 @@ export function analyzeFlight(parsed: ParsedTrack, opts: AnalyzeOptions = {}): F
 
   // Pass 1: circling (thermals + bad turns)
   const { thermals, badTurns, significantIntervals } =
-    detectCircling(fixes, derived, start, end, opts.thermalMinTurns);
+    detectCircling(fixes, derived, start, end, opts.thermalMinTurns, opts.thermalBridgeGapSec);
 
   // Pass 2: ridge soaring — excludes all circling intervals
   const ridgeSoars = detectRidgeSoaring(
@@ -36,7 +38,7 @@ export function analyzeFlight(parsed: ParsedTrack, opts: AnalyzeOptions = {}): F
   );
 
   const phases = [...thermals, ...badTurns, ...glides].sort((a, b) => a.startIdx - b.startIdx);
-  const stats = computeStats(fixes, derived, start, end, thermals, ridgeSoars);
+  const stats = computeStats(fixes, derived, start, end, thermals, glides, ridgeSoars);
 
   return {
     meta, fixes, derived, stats,

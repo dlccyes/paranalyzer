@@ -1,4 +1,4 @@
-import type { Derived, Fix, FlightStats, RidgeSoar, Thermal } from "../types";
+import type { Derived, Fix, FlightStats, Glide, RidgeSoar, Thermal } from "../types";
 import { haversine } from "./geo";
 import { averageWind } from "./wind";
 import { scoreFlight } from "./score";
@@ -26,6 +26,7 @@ export function computeStats(
   start: number,
   end: number,
   thermals: Thermal[],
+  glides: Glide[],
   ridgeSoars: RidgeSoar[],
 ): FlightStats {
   let maxAlt = -Infinity;
@@ -50,6 +51,7 @@ export function computeStats(
   );
 
   const timeInThermal = thermals.reduce((s, t) => s + t.duration, 0);
+  const timeInGlide = glides.reduce((s, g) => s + g.duration, 0);
   const timeInRidge = ridgeSoars.reduce((s, r) => s + r.duration, 0);
 
   return {
@@ -67,6 +69,7 @@ export function computeStats(
     avgSpeed: airtime > 0 ? trackLength / airtime : 0,
     wind: averageWind(thermals.map((t) => ({ wind: t.wind, weight: t.turns }))),
     timeInThermal,
+    timeInGlide,
     timeInRidge,
     xcScore: scoreFlight(fixes, start, end),
   };

@@ -88,8 +88,6 @@ export interface Thermal extends PhaseBase {
   climbRate: number;
   /** Average circling radius in metres. */
   avgRadius: number;
-  /** +1 clockwise (right), -1 counter-clockwise (left). */
-  direction: 1 | -1;
   /** Wind estimated from this thermal's circles. */
   wind: WindEstimate | null;
 }
@@ -105,7 +103,6 @@ export interface BadTurn extends PhaseBase {
   /** Average vertical rate over the segment, m/s (≤ climb threshold). */
   climbRate: number;
   avgRadius: number;
-  direction: 1 | -1;
   wind: WindEstimate | null;
 }
 
@@ -194,6 +191,8 @@ export interface FlightStats {
   wind: WindEstimate | null;
   /** Total seconds spent in thermals. */
   timeInThermal: number;
+  /** Total seconds spent in glides. */
+  timeInGlide: number;
   /** Total seconds spent in detected ridge / slope soaring. */
   timeInRidge: number;
   /** XContest score computed by the official World XContest algorithm. */

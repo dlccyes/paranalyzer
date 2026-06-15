@@ -1,5 +1,5 @@
 import type { AnyPhase, Thermal } from "@paranalyzer/core";
-import { compassName, formatClock, formatDuration, type UnitFormatter } from "@paranalyzer/core";
+import { compassName, formatClock, formatDuration, PARAMS, type UnitFormatter } from "@paranalyzer/core";
 import { WindBadge } from "./WindBadge";
 import { useSortableRows } from "./useSortableRows";
 
@@ -8,6 +8,8 @@ interface Props {
   fmt: UnitFormatter;
   tz: number;
   selected: AnyPhase | null;
+  minTurns?: number;
+  bridgeGapSec?: number;
   onSelect: (p: Thermal | null) => void;
   onHover: (p: Thermal | null) => void;
 }
@@ -22,15 +24,31 @@ const COLUMNS = [
   { key: "wind", accessor: (t: Thermal) => t.wind?.speed ?? null },
 ];
 
-export function ThermalsTable({ thermals, fmt, tz, selected, onSelect, onHover }: Props) {
+function formatTurnThreshold(turns: number): string {
+  const label = Number.isInteger(turns) ? String(turns) : turns.toFixed(1);
+  return `≥ ${label} ${turns === 1 ? "turn" : "turns"}`;
+}
+
+export function ThermalsTable({
+  thermals,
+  fmt,
+  tz,
+  selected,
+  minTurns = PARAMS.thermalMinTurns,
+  bridgeGapSec = PARAMS.bridgeGapSec,
+  onSelect,
+  onHover,
+}: Props) {
   const { sorted, toggle, indicator } = useSortableRows(thermals, COLUMNS);
   const origIndex = new Map(thermals.map((t, i) => [t, i + 1]));
+  const totalDuration = thermals.reduce((sum, t) => sum + t.duration, 0);
 
   return (
     <div className="card table-card">
       <div className="panel-title">
         Thermals <span className="count">{thermals.length}</span>
-        <span className="panel-hint">≥ 3 turns</span>
+        <span className="count">{formatDuration(totalDuration)}</span>
+        <span className="panel-hint">{formatTurnThreshold(minTurns)}, bridge ≤ {bridgeGapSec}s</span>
       </div>
       {thermals.length === 0 ? (
         <p className="empty">No well-formed thermals detected.</p>
@@ -60,10 +78,7 @@ export function ThermalsTable({ thermals, fmt, tz, selected, onSelect, onHover }
                   <td className="dim">{origIndex.get(t)}</td>
                   <td>{formatClock(t.startTime, tz)}</td>
                   <td>{formatDuration(t.duration)}</td>
-                  <td>
-                    {t.turns.toFixed(1)}
-                    <span className="turn-dir">{t.direction === 1 ? "↻" : "↺"}</span>
-                  </td>
+                  <td>{t.turns.toFixed(1)}</td>
                   <td className="climb">+{fmt.altitude(t.climb)}</td>
                   <td>{fmt.vario(t.climbRate)}</td>
                   <td>{fmt.smallDistance(t.avgRadius)}</td>

@@ -1,5 +1,5 @@
 import type { AnyPhase, RidgeSoar } from "@paranalyzer/core";
-import { formatClock, formatDuration, type UnitFormatter } from "@paranalyzer/core";
+import { formatClock, formatDuration, RIDGE_PARAMS, type UnitFormatter } from "@paranalyzer/core";
 import { useSortableRows } from "./useSortableRows";
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
   fmt: UnitFormatter;
   tz: number;
   selected: AnyPhase | null;
+  bridgeGapSec?: number;
   onSelect: (r: RidgeSoar | null) => void;
   onHover: (r: RidgeSoar | null) => void;
 }
@@ -20,9 +21,18 @@ const COLUMNS = [
   { key: "passes", accessor: (r: RidgeSoar) => r.passes },
 ];
 
-export function RidgeSoarsTable({ ridgeSoars, fmt, tz, selected, onSelect, onHover }: Props) {
+export function RidgeSoarsTable({
+  ridgeSoars,
+  fmt,
+  tz,
+  selected,
+  bridgeGapSec = RIDGE_PARAMS.bridgeGapSec,
+  onSelect,
+  onHover,
+}: Props) {
   const { sorted, toggle, indicator } = useSortableRows(ridgeSoars, COLUMNS);
   const origIndex = new Map(ridgeSoars.map((r, i) => [r, i + 1]));
+  const totalDuration = ridgeSoars.reduce((sum, r) => sum + r.duration, 0);
 
   const signedAlt = (m: number) =>
     `${m >= 0 ? "+" : "−"}${fmt.altitude(Math.abs(m))}`;
@@ -31,7 +41,8 @@ export function RidgeSoarsTable({ ridgeSoars, fmt, tz, selected, onSelect, onHov
     <div className="card table-card">
       <div className="panel-title">
         Ridge soaring <span className="count">{ridgeSoars.length}</span>
-        <span className="panel-hint">non-circling, maintaining alt</span>
+        <span className="count">{formatDuration(totalDuration)}</span>
+        <span className="panel-hint">non-circling, bridge &lt; {bridgeGapSec}s</span>
       </div>
       {ridgeSoars.length === 0 ? (
         <p className="empty">No ridge soaring detected.</p>

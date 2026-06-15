@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getSettings,
@@ -37,6 +37,38 @@ export function SettingsScreen() {
     setStatus(msg);
     setTimeout(() => setStatus(null), 3000);
   };
+
+  const doRecalc = async () => {
+    setBusy(true);
+    setRecalcProgress("Starting…");
+    try {
+      const { updated, failed } = await recalcAll((done, total) => {
+        setRecalcProgress(`${done} / ${total}`);
+      });
+      setRecalcProgress(null);
+      toast(`Recalculated ${updated} flight${updated === 1 ? "" : "s"}${failed ? ` (${failed} failed)` : ""}`);
+    } catch (err) {
+      setRecalcProgress(null);
+      toast(err instanceof Error ? err.message : "Error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Changing an analysis threshold persists immediately, then recalculates all
+  // stored flights after a short debounce so rapid edits coalesce into one run.
+  const recalcTimer = useRef<number | null>(null);
+  const persistAndRecalc = (next: Settings) => {
+    void persist(next);
+    if (recalcTimer.current != null) clearTimeout(recalcTimer.current);
+    recalcTimer.current = window.setTimeout(() => {
+      recalcTimer.current = null;
+      void doRecalc();
+    }, 800);
+  };
+  useEffect(() => () => {
+    if (recalcTimer.current != null) clearTimeout(recalcTimer.current);
+  }, []);
 
   const run = async (fn: () => Promise<void>, success: string) => {
     setBusy(true);
@@ -149,16 +181,35 @@ export function SettingsScreen() {
                 onChange={(e) => {
                   const n = Number(e.target.value);
                   if (!Number.isFinite(n)) return;
-                  persist({ ...settings, thermalMinTurns: Math.min(10, Math.max(0, n)) });
+                  persistAndRecalc({ ...settings, thermalMinTurns: Math.min(10, Math.max(0, n)) });
                 }}
               />
               <span className="settings-input-unit">turns</span>
             </div>
           </div>
+          <div className="settings-field-row">
+            <label htmlFor="thermal-bridge-gap">Bridge gap</label>
+            <div className="settings-input-group">
+              <input
+                id="thermal-bridge-gap"
+                type="number"
+                min={0}
+                max={120}
+                step={1}
+                value={settings.thermalBridgeGapSec}
+                onChange={(e) => {
+                  const n = Math.round(Number(e.target.value));
+                  if (!Number.isFinite(n)) return;
+                  persistAndRecalc({ ...settings, thermalBridgeGapSec: Math.min(120, Math.max(0, n)) });
+                }}
+              />
+              <span className="settings-input-unit">s</span>
+            </div>
+          </div>
           <p className="settings-note">
             A climbing circle must complete at least this many full turns to count as a thermal.
-            Lower values catch brief climbs; higher values keep only well-formed thermals.
-            Recalculate flights below to apply to existing flights.
+            Circling sections separated by the bridge gap or less are merged before detection.
+            Changing this recalculates all stored flights automatically.
           </p>
         </section>
 
@@ -177,7 +228,7 @@ export function SettingsScreen() {
                 onChange={(e) => {
                   const n = Math.round(Number(e.target.value));
                   if (!Number.isFinite(n)) return;
-                  persist({ ...settings, ridgeBridgeGapSec: Math.min(120, Math.max(0, n)) });
+                  persistAndRecalc({ ...settings, ridgeBridgeGapSec: Math.min(120, Math.max(0, n)) });
                 }}
               />
               <span className="settings-input-unit">s</span>
@@ -186,7 +237,7 @@ export function SettingsScreen() {
           <p className="settings-note">
             Consecutive ridge-soaring runs separated by a shorter gap are merged into one.
             Larger values join runs split by brief turns; smaller values keep them apart.
-            Recalculate flights below to apply to existing flights.
+            Changing this recalculates all stored flights automatically.
           </p>
         </section>
 
@@ -335,27 +386,12 @@ export function SettingsScreen() {
             <button
               className="btn btn-ghost"
               disabled={busy}
-              onClick={async () => {
-                setBusy(true);
-                setRecalcProgress("Starting…");
-                try {
-                  const { updated, failed } = await recalcAll((done, total) => {
-                    setRecalcProgress(`${done} / ${total}`);
-                  });
-                  setRecalcProgress(null);
-                  toast(`Recalculated ${updated} flight${updated === 1 ? "" : "s"}${failed ? ` (${failed} failed)` : ""}`);
-                } catch (err) {
-                  setRecalcProgress(null);
-                  toast(err instanceof Error ? err.message : "Error");
-                } finally {
-                  setBusy(false);
-                }
-              }}
+              onClick={doRecalc}
             >
               {recalcProgress ? `Recalculating… ${recalcProgress}` : "Recalculate all flights"}
             </button>
           </div>
-          <p className="settings-note">Re-runs analysis on every stored flight. Updates scores, ridge detection, and all derived stats. Keeps your notes, sites, and XContest links.</p>
+          <p className="settings-note">Re-runs analysis on every stored flight. Updates scores, ridge detection, and all derived stats. Keeps your notes, sites, and XContest links. Runs automatically when you change a threshold above.</p>
         </section>
 
         <section className="settings-section">

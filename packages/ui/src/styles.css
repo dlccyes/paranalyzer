@@ -301,8 +301,6 @@ td.dim, .dim { color: var(--muted); }
 td.climb { color: var(--climb); font-weight: 600; }
 td.sink { color: var(--sink); font-weight: 600; }
 td.glide-ratio { font-weight: 600; }
-.turn-dir { margin-left: 4px; color: var(--thermal); }
-.turn-dir.bad { color: var(--badturn); }
 .course-badge {
   display: inline-flex;
   align-items: center;

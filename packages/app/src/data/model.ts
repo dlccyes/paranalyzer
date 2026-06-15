@@ -6,7 +6,7 @@ export const DB_SCHEMA_VERSION = 1;
 
 export type FieldId =
   | "startTime" | "glider" | "site" | "pilot"
-  | "airtime" | "timeInThermal" | "timeInRidge"
+  | "airtime" | "timeInThermal" | "timeInGlide" | "timeInRidge"
   | "maxAlt" | "maxAltGain" | "maxClimb" | "maxSink"
   | "trackLength" | "straightDistance" | "freeDistance" | "avgSpeed"
   | "thermalCount" | "glideCount" | "ridgeCount"
@@ -23,6 +23,7 @@ export const FIELD_TYPES: Record<FieldId, FilterFieldType> = {
   pilot: "text",
   airtime: "duration",
   timeInThermal: "duration",
+  timeInGlide: "duration",
   timeInRidge: "duration",
   maxAlt: "altitude",
   maxAltGain: "altitude",
@@ -72,6 +73,8 @@ export interface Settings {
   sites: string[];
   /** Bridge ridge-soaring runs separated by less than this many seconds. */
   ridgeBridgeGapSec: number;
+  /** Bridge thermal/circling runs separated by this many seconds or less. */
+  thermalBridgeGapSec: number;
   /** Minimum number of turns for a climbing circle to count as a thermal. */
   thermalMinTurns: number;
   lastBackupAt?: number;
@@ -86,7 +89,7 @@ export interface DbDocument {
 
 export const ALL_FIELDS: FieldId[] = [
   "startTime", "glider", "site", "pilot",
-  "airtime", "timeInThermal", "timeInRidge",
+  "airtime", "timeInThermal", "timeInGlide", "timeInRidge",
   "maxAlt", "maxAltGain", "maxClimb", "maxSink",
   "trackLength", "straightDistance", "freeDistance", "avgSpeed",
   "thermalCount", "glideCount", "ridgeCount",
@@ -100,6 +103,7 @@ export const FIELD_LABELS: Record<FieldId, string> = {
   pilot: "Pilot",
   airtime: "Airtime",
   timeInThermal: "Time in thermal",
+  timeInGlide: "Time in glide",
   timeInRidge: "Time in ridge soaring",
   maxAlt: "Max alt",
   maxAltGain: "Alt gain",
@@ -119,8 +123,8 @@ export const FIELD_LABELS: Record<FieldId, string> = {
   xcontestUrl: "XC link",
 };
 
-const DEFAULT_VISIBLE: FieldId[] = [
-  "startTime", "glider", "site", "airtime", "timeInThermal", "timeInRidge",
+export const DEFAULT_VISIBLE: FieldId[] = [
+  "startTime", "glider", "site", "airtime", "timeInThermal", "timeInGlide", "timeInRidge",
   "maxAltGain", "freeDistance", "note",
 ];
 
@@ -132,6 +136,7 @@ export const DEFAULT_SETTINGS: Settings = {
   dateFormat: "dmy",
   sites: [],
   ridgeBridgeGapSec: 20,
+  thermalBridgeGapSec: 10,
   thermalMinTurns: 1,
 };
 
@@ -139,6 +144,7 @@ export const DEFAULT_SETTINGS: Settings = {
 export function analyzeOptions(settings: Settings): AnalyzeOptions {
   return {
     ridgeBridgeGapSec: settings.ridgeBridgeGapSec,
+    thermalBridgeGapSec: settings.thermalBridgeGapSec,
     thermalMinTurns: settings.thermalMinTurns,
   };
 }

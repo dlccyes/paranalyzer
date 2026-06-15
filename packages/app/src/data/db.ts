@@ -1,5 +1,5 @@
 import type { ColumnConfig, DbDocument, FlightRecord, Settings } from "./model";
-import { DB_SCHEMA_VERSION, DEFAULT_SETTINGS, ALL_FIELDS } from "./model";
+import { DB_SCHEMA_VERSION, DEFAULT_SETTINGS, ALL_FIELDS, DEFAULT_VISIBLE } from "./model";
 import { getPlatform } from "../platform";
 
 let cache: DbDocument | null = null;
@@ -12,7 +12,7 @@ function reconcileColumns(cols: ColumnConfig[] | undefined): ColumnConfig[] {
   const present = new Set(valid.map((c) => c.id));
   const missing = ALL_FIELDS
     .filter((id) => !present.has(id))
-    .map((id) => ({ id, visible: false }));
+    .map((id) => ({ id, visible: DEFAULT_VISIBLE.includes(id) }));
   return [...valid, ...missing];
 }
 

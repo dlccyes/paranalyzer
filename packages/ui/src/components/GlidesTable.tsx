@@ -47,11 +47,13 @@ function sinkClass(sink: number): string {
 export function GlidesTable({ glides, fmt, tz, selected, onSelect, onHover }: Props) {
   const { sorted, toggle, indicator } = useSortableRows(glides, COLUMNS);
   const origIndex = new Map(glides.map((g, i) => [g, i + 1]));
+  const totalDuration = glides.reduce((sum, g) => sum + g.duration, 0);
 
   return (
     <div className="card table-card wide">
       <div className="panel-title">
         Glides <span className="count">{glides.length}</span>
+        <span className="count">{formatDuration(totalDuration)}</span>
         <span className="panel-hint">straight lines</span>
       </div>
       {glides.length === 0 ? (
