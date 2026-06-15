@@ -11,9 +11,10 @@ import { WindBadge } from "./WindBadge";
 interface Props {
   flight: Flight;
   fmt: UnitFormatter;
+  dateFormat?: "dmy" | "ymd";
 }
 
-export function SummaryPanel({ flight, fmt }: Props) {
+export function SummaryPanel({ flight, fmt, dateFormat = "dmy" }: Props) {
   const { meta, stats } = flight;
   const tz = meta.tzOffsetMinutes ?? 0;
   const tzLabel = meta.tzOffsetMinutes != null ? formatTzOffset(tz) : "UTC";
@@ -34,7 +35,7 @@ export function SummaryPanel({ flight, fmt }: Props) {
             {meta.pilot && (<><dt>Pilot</dt><dd>{meta.pilot}</dd></>)}
             <dt>Date</dt>
             <dd>
-              {formatDate(stats.start, tz)} {formatClock(stats.start, tz)}{" "}
+              {formatDate(stats.start, tz, dateFormat)} {formatClock(stats.start, tz)}{" "}
               <span className="muted">{tzLabel}</span>
             </dd>
             {meta.site && (<><dt>Launch</dt><dd>{meta.site}</dd></>)}

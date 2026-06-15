@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Flight, Phase } from "@paranalyzer/core";
 import { makeFormatter, type UnitSystem } from "@paranalyzer/core";
 import { SummaryPanel } from "./components/SummaryPanel";
@@ -13,9 +13,10 @@ export interface AnalysisViewProps {
   flight: Flight;
   units?: UnitSystem;
   onUnitsChange?: (u: UnitSystem) => void;
+  dateFormat?: "dmy" | "ymd";
 }
 
-export function AnalysisView({ flight, units: unitsProp, onUnitsChange }: AnalysisViewProps) {
+export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateFormat = "dmy" }: AnalysisViewProps) {
   const [unitsLocal, setUnitsLocal] = useState<UnitSystem>(
     () => (localStorage.getItem("paranalyzer.units") as UnitSystem) || "metric",
   );
@@ -30,6 +31,13 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange }: Analys
   const [selected, setSelected] = useState<Phase | null>(null);
   const [hovered, setHovered] = useState<Phase | null>(null);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selected) {
+      mapRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [selected]);
 
   const fmt = useMemo(() => makeFormatter(units), [units]);
   const activePhase = hovered ?? selected;
@@ -40,8 +48,10 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange }: Analys
       <div className="dashboard-header">
         <UnitToggle value={units} onChange={changeUnits} />
       </div>
-      <SummaryPanel flight={flight} fmt={fmt} />
-      <FlightMap flight={flight} highlight={activePhase} zoomTo={selected} hoverIdx={hoverIdx} />
+      <SummaryPanel flight={flight} fmt={fmt} dateFormat={dateFormat} />
+      <div ref={mapRef}>
+        <FlightMap flight={flight} highlight={activePhase} zoomTo={selected} hoverIdx={hoverIdx} />
+      </div>
       <Barogram
         flight={flight}
         fmt={fmt}

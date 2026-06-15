@@ -18,7 +18,8 @@
     "baseUrl": ".",
     "paths": {
       "@paranalyzer/core": ["packages/core/src/index.ts"],
-      "@paranalyzer/ui": ["packages/ui/src/index.ts"]
+      "@paranalyzer/ui": ["packages/ui/src/index.ts"],
+      "@paranalyzer/app": ["packages/app/src/index.ts"]
     }
   }
 }

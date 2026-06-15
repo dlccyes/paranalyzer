@@ -38,6 +38,7 @@ export interface FlightRecord {
   windFromDeg?: number;
 
   note: string;
+  xcontestPoints?: number;
 }
 
 export function buildFlightRecord(

@@ -75,11 +75,29 @@ export function formatClock(epochMs: number, tzOffsetMinutes = 0): string {
   return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
 }
 
-/** Format a date (epoch ms) as DD.MM.YYYY at the given tz offset. */
-export function formatDate(epochMs: number, tzOffsetMinutes = 0): string {
+/** Format a date (epoch ms) at the given tz offset. fmt "dmy" → DD.MM.YYYY, "ymd" → YYYY-MM-DD. */
+export function formatDate(epochMs: number, tzOffsetMinutes = 0, fmt: "dmy" | "ymd" = "dmy"): string {
   const d = new Date(epochMs + tzOffsetMinutes * 60_000);
   const pad = (n: number) => n.toString().padStart(2, "0");
+  if (fmt === "ymd") {
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  }
   return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()}`;
+}
+
+/** Parse "H:MM" or "HH:MM" duration string → seconds. */
+export function parseHhMm(str: string): number {
+  const parts = str.split(":");
+  if (parts.length !== 2) return 0;
+  return (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60;
+}
+
+/** Format seconds → "H:MM" duration string. */
+export function formatHhMm(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  return `${h}:${m.toString().padStart(2, "0")}`;
 }
 
 /** Pretty tz offset like "UTC-07:00". */

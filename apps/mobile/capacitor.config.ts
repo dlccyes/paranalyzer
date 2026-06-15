@@ -24,7 +24,9 @@ const config: CapacitorConfig = {
     GoogleAuth: {
       scopes: ["profile", "email", "https://www.googleapis.com/auth/drive.appdata"],
       androidClientId: "793792702856-8p3th1ignl975cl0132obqcfko3lgfrs.apps.googleusercontent.com",
-      forceCodeForRefreshToken: false,
+      // Task L fix: serverClientId is the Web OAuth client ID — required for offline access / refresh tokens on Android
+      serverClientId: "793792702856-2pkgc4a54n4or7ijcb1vm3rld3un35r5.apps.googleusercontent.com",
+      forceCodeForRefreshToken: true,
     },
   },
 };
