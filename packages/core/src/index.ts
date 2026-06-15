@@ -3,7 +3,8 @@ export { parseTrack, detectFormat } from "./parsers";
 export type { SupportedFormat } from "./parsers";
 export { analyzeFlight } from "./analysis/analyze";
 export { computeDerived } from "./analysis/derive";
-export { detectPhases, PARAMS } from "./analysis/phases";
+export { detectPhases, detectCircling, detectGlides, PARAMS } from "./analysis/phases";
+export type { CirclingResult } from "./analysis/phases";
 export { computeStats, detectActiveRange, freeDistance } from "./analysis/stats";
 export { estimateWind, averageWind } from "./analysis/wind";
 export {

@@ -1,6 +1,6 @@
 import type { Flight, ParsedTrack } from "../types";
 import { computeDerived } from "./derive";
-import { detectPhases } from "./phases";
+import { detectCircling, detectGlides } from "./phases";
 import { computeStats, detectActiveRange } from "./stats";
 import { detectRidgeSoaring } from "./ridge";
 
@@ -9,31 +9,27 @@ export function analyzeFlight(parsed: ParsedTrack): Flight {
   const { fixes, meta } = parsed;
   const derived = computeDerived(fixes);
   const [start, end] = detectActiveRange(derived);
-  const { thermals, badTurns, glides, phases } = detectPhases(fixes, derived, start, end);
 
-  const circlingIntervals = [...thermals, ...badTurns].map(
-    (p): [number, number] => [p.startIdx, p.endIdx],
-  );
-  const ridgeSoars = detectRidgeSoaring(fixes, derived, start, end, circlingIntervals);
+  // Pass 1: circling (thermals + bad turns)
+  const { thermals, badTurns, significantIntervals } = detectCircling(fixes, derived, start, end);
 
-  // Remove glides that substantially overlap a ridge soaring span (>30% by time)
-  // so ridge flight isn't double-counted as a glide.
-  const filteredGlides = glides.filter((g) =>
-    !ridgeSoars.some((r) => {
-      const oa = Math.max(g.startIdx, r.startIdx);
-      const ob = Math.min(g.endIdx, r.endIdx);
-      if (ob <= oa) return false;
-      const overlapSec = derived.t[ob] - derived.t[oa];
-      const glideSec = derived.t[g.endIdx] - derived.t[g.startIdx];
-      return glideSec > 0 && overlapSec / glideSec > 0.3;
-    }),
+  // Pass 2: ridge soaring — excludes all circling intervals
+  const ridgeSoars = detectRidgeSoaring(fixes, derived, start, end, significantIntervals);
+  const ridgeIntervals: [number, number][] = ridgeSoars.map((r) => [r.startIdx, r.endIdx]);
+
+  // Pass 3: glides — fill gaps not claimed by circling or ridge
+  const glides = detectGlides(
+    fixes, derived, start, end,
+    [...significantIntervals, ...ridgeIntervals],
+    thermals,
   );
 
+  const phases = [...thermals, ...badTurns, ...glides].sort((a, b) => a.startIdx - b.startIdx);
   const stats = computeStats(fixes, derived, start, end, thermals, ridgeSoars);
 
   return {
     meta, fixes, derived, stats,
-    thermals, badTurns, glides: filteredGlides, phases,
+    thermals, badTurns, glides, phases,
     range: [start, end],
     ridgeSoars,
   };

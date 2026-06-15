@@ -24,6 +24,13 @@ interface CirclingRun {
   direction: 1 | -1;
 }
 
+export interface CirclingResult {
+  thermals: Thermal[];
+  badTurns: BadTurn[];
+  /** All significant circling runs (≥ minSignificantTurns). Used as exclusion zones for ridge and glide detection. */
+  significantIntervals: [number, number][];
+}
+
 export interface PhaseResult {
   thermals: Thermal[];
   badTurns: BadTurn[];
@@ -31,12 +38,13 @@ export interface PhaseResult {
   phases: Phase[];
 }
 
-export function detectPhases(
+/** Pass 1: detect all circling events (thermals + bad turns) and their bounding intervals. */
+export function detectCircling(
   fixes: Fix[],
   derived: Derived,
   startIdx: number,
   endIdx: number,
-): PhaseResult {
+): CirclingResult {
   const str = smoothTurnRate(derived, startIdx, endIdx);
   const runs = findCirclingRuns(derived, str, startIdx, endIdx);
 
@@ -54,20 +62,55 @@ export function detectPhases(
     }
   }
 
+  return {
+    thermals,
+    badTurns,
+    significantIntervals: significant.map((r): [number, number] => [r.a, r.b]),
+  };
+}
+
+/**
+ * Pass 3: detect glides as the gaps between all excluded intervals.
+ * excludeIntervals should be the union of significantIntervals (from pass 1)
+ * and ridge intervals (from pass 2) so the three phase types are mutually exclusive.
+ */
+export function detectGlides(
+  fixes: Fix[],
+  derived: Derived,
+  startIdx: number,
+  endIdx: number,
+  excludeIntervals: [number, number][],
+  thermals: Thermal[],
+): Glide[] {
   const glides: Glide[] = [];
   let cursor = startIdx;
-  const boundaries = [...significant].sort((x, y) => x.a - y.a);
-  for (const run of boundaries) {
-    if (run.a - 1 >= cursor) {
-      maybePushGlide(glides, fixes, derived, cursor, run.a);
+  const boundaries = excludeIntervals
+    .map(([a, b]) => ({ a, b }))
+    .sort((x, y) => x.a - y.a);
+
+  for (const { a, b } of boundaries) {
+    if (a - 1 >= cursor) {
+      maybePushGlide(glides, fixes, derived, cursor, a);
     }
-    cursor = Math.max(cursor, run.b);
+    cursor = Math.max(cursor, b);
   }
   if (endIdx > cursor) {
     maybePushGlide(glides, fixes, derived, cursor, endIdx);
   }
 
   assignGlideWinds(glides, thermals);
+  return glides;
+}
+
+/** Convenience wrapper that runs both circling and glide detection without ridge. */
+export function detectPhases(
+  fixes: Fix[],
+  derived: Derived,
+  startIdx: number,
+  endIdx: number,
+): PhaseResult {
+  const { thermals, badTurns, significantIntervals } = detectCircling(fixes, derived, startIdx, endIdx);
+  const glides = detectGlides(fixes, derived, startIdx, endIdx, significantIntervals, thermals);
 
   const phases: Phase[] = [...thermals, ...badTurns, ...glides].sort(
     (x, y) => x.startIdx - y.startIdx,
