@@ -1,8 +1,20 @@
-import type { DbDocument, FlightRecord, Settings } from "./model";
-import { DB_SCHEMA_VERSION, DEFAULT_SETTINGS } from "./model";
+import type { ColumnConfig, DbDocument, FlightRecord, Settings } from "./model";
+import { DB_SCHEMA_VERSION, DEFAULT_SETTINGS, ALL_FIELDS } from "./model";
 import { getPlatform } from "../platform";
 
 let cache: DbDocument | null = null;
+
+// Keep persisted column config in sync with ALL_FIELDS: drop unknown ids and
+// append fields added in newer versions (e.g. xcontestPoints) so they show up
+// in the Columns menu instead of silently disappearing.
+function reconcileColumns(cols: ColumnConfig[] | undefined): ColumnConfig[] {
+  const valid = (cols ?? []).filter((c) => ALL_FIELDS.includes(c.id));
+  const present = new Set(valid.map((c) => c.id));
+  const missing = ALL_FIELDS
+    .filter((id) => !present.has(id))
+    .map((id) => ({ id, visible: false }));
+  return [...valid, ...missing];
+}
 
 export async function loadDb(): Promise<DbDocument> {
   if (cache) return cache;
@@ -10,7 +22,9 @@ export async function loadDb(): Promise<DbDocument> {
   if (raw) {
     try {
       const doc = JSON.parse(raw) as DbDocument;
-      cache = { ...doc, settings: { ...DEFAULT_SETTINGS, ...doc.settings } };
+      const settings = { ...DEFAULT_SETTINGS, ...doc.settings };
+      settings.columns = reconcileColumns(settings.columns);
+      cache = { ...doc, settings };
       return cache;
     } catch {
       // fall through to seed

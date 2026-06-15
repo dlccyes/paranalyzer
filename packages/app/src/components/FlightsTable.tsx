@@ -21,37 +21,58 @@ const helper = createColumnHelper<FlightRecord>();
 function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
   const fmt = makeFormatter(units);
 
-  const col = (id: FieldId, cell: (v: FlightRecord) => React.ReactNode) =>
+  const col = (
+    id: FieldId,
+    cell: (v: FlightRecord) => React.ReactNode,
+    foot?: (rows: FlightRecord[]) => React.ReactNode,
+  ) =>
     helper.accessor(id as keyof FlightRecord, {
       id,
       header: FIELD_LABELS[id],
       cell: (info) => cell(info.row.original),
+      footer: foot
+        ? (info) => foot(info.table.getFilteredRowModel().rows.map((r) => r.original))
+        : undefined,
       enableSorting: true,
     });
 
+  const sumOf = (rows: FlightRecord[], key: keyof FlightRecord) =>
+    rows.reduce((acc, r) => acc + ((r[key] as number) ?? 0), 0);
+  // Only cumulative quantities (durations, distances, counts, points) are summed.
+  // Maxima, averages, wind and instant readings have no meaningful total.
+  const sumDuration = (id: keyof FlightRecord, withSeconds = false) =>
+    (rows: FlightRecord[]) => formatDuration(sumOf(rows, id), withSeconds);
+  const sumDistance = (id: keyof FlightRecord) =>
+    (rows: FlightRecord[]) => fmt.distance(sumOf(rows, id));
+  const sumCount = (id: keyof FlightRecord) =>
+    (rows: FlightRecord[]) => String(sumOf(rows, id));
+
   return [
-    col("startTime", (r) =>
-      r.tzOffsetMinutes != null
-        ? `${formatDate(r.startTime, r.tzOffsetMinutes, dateFormat)} ${formatClock(r.startTime, r.tzOffsetMinutes)}`
-        : formatDate(r.startTime, 0, dateFormat)
+    col(
+      "startTime",
+      (r) =>
+        r.tzOffsetMinutes != null
+          ? `${formatDate(r.startTime, r.tzOffsetMinutes, dateFormat)} ${formatClock(r.startTime, r.tzOffsetMinutes)}`
+          : formatDate(r.startTime, 0, dateFormat),
+      (rows) => `Total · ${rows.length} flight${rows.length === 1 ? "" : "s"}`,
     ),
     col("glider", (r) => r.glider ?? "—"),
     col("site", (r) => r.site ?? "—"),
     col("pilot", (r) => r.pilot ?? "—"),
-    col("airtime", (r) => formatDuration(r.airtime, true)),
-    col("timeInThermal", (r) => formatDuration(r.timeInThermal)),
-    col("timeInRidge", (r) => formatDuration(r.timeInRidge)),
+    col("airtime", (r) => formatDuration(r.airtime, true), sumDuration("airtime", true)),
+    col("timeInThermal", (r) => formatDuration(r.timeInThermal), sumDuration("timeInThermal")),
+    col("timeInRidge", (r) => formatDuration(r.timeInRidge), sumDuration("timeInRidge")),
     col("maxAlt", (r) => fmt.altitude(r.maxAlt)),
     col("maxAltGain", (r) => fmt.altitude(r.maxAltGain)),
     col("maxClimb", (r) => fmt.vario(r.maxClimb)),
     col("maxSink", (r) => fmt.vario(-r.maxSink)),
-    col("trackLength", (r) => fmt.distance(r.trackLength)),
-    col("straightDistance", (r) => fmt.distance(r.straightDistance)),
-    col("freeDistance", (r) => fmt.distance(r.freeDistance)),
+    col("trackLength", (r) => fmt.distance(r.trackLength), sumDistance("trackLength")),
+    col("straightDistance", (r) => fmt.distance(r.straightDistance), sumDistance("straightDistance")),
+    col("freeDistance", (r) => fmt.distance(r.freeDistance), sumDistance("freeDistance")),
     col("avgSpeed", (r) => fmt.speed(r.avgSpeed)),
-    col("thermalCount", (r) => String(r.thermalCount)),
-    col("glideCount", (r) => String(r.glideCount)),
-    col("ridgeCount", (r) => String(r.ridgeCount)),
+    col("thermalCount", (r) => String(r.thermalCount), sumCount("thermalCount")),
+    col("glideCount", (r) => String(r.glideCount), sumCount("glideCount")),
+    col("ridgeCount", (r) => String(r.ridgeCount), sumCount("ridgeCount")),
     col("windSpeed", (r) => r.windSpeed != null ? fmt.speed(r.windSpeed) : "—"),
     col("windFromDeg", (r) =>
       r.windFromDeg != null ? (
@@ -61,7 +82,14 @@ function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
         </span>
       ) : "—"
     ),
-    col("xcontestPoints", (r) => r.xcontestPoints != null ? String(r.xcontestPoints) : "—"),
+    col(
+      "xcontestPoints",
+      (r) => r.xcontestPoints != null ? String(r.xcontestPoints) : "—",
+      (rows) => {
+        const total = sumOf(rows, "xcontestPoints");
+        return total ? String(Math.round(total * 100) / 100) : "";
+      },
+    ),
     col("note", (r) => r.note || ""),
   ];
 }
@@ -212,6 +240,21 @@ export function FlightsTable({
               ))
             )}
           </tbody>
+          {table.getRowModel().rows.length > 0 && (
+            <tfoot>
+              {table.getFooterGroups().map((fg) => (
+                <tr key={fg.id}>
+                  {fg.headers.map((header) => (
+                    <td key={header.id}>
+                      {header.column.columnDef.footer
+                        ? flexRender(header.column.columnDef.footer, header.getContext())
+                        : null}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tfoot>
+          )}
         </table>
       </div>
     </>
