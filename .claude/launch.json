@@ -4,7 +4,7 @@
     {
       "name": "paranalyzer",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": ["run", "dev", "-w", "@paranalyzer/web"],
       "port": 5173
     }
   ]
