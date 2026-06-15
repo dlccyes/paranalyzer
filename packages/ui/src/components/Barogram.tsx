@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import type { AnyPhase, Flight, Phase } from "@paranalyzer/core";
+import type { AnyPhase, Flight } from "@paranalyzer/core";
 import { PHASE_COLORS, varioColor, formatClock, type UnitFormatter } from "@paranalyzer/core";
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
   active: AnyPhase | null;
   hoverIdx: number | null;
   onHoverIdx: (i: number | null) => void;
-  onSelect: (p: Phase | null) => void;
+  onSelect: (p: AnyPhase | null) => void;
 }
 
 const W = 1000;
@@ -20,7 +20,7 @@ const PLOT_H = H - PAD.t - PAD.b;
 export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [s, e] = flight.range;
-  const { fixes, derived, phases } = flight;
+  const { fixes, derived, phases, ridgeSoars } = flight;
   const tz = flight.meta.tzOffsetMinutes ?? 0;
 
   const model = useMemo(() => {
@@ -116,8 +116,10 @@ export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect }
           onClick={(ev) => {
             const i = idxFromClientX(ev.clientX);
             if (i == null) return;
-            const p = phases.find((ph) => i >= ph.startIdx && i <= ph.endIdx);
-            onSelect(p ?? null);
+            const phase = phases.find((ph) => i >= ph.startIdx && i <= ph.endIdx);
+            if (phase) { onSelect(phase); return; }
+            const ridge = ridgeSoars.find((r) => i >= r.startIdx && i <= r.endIdx);
+            onSelect(ridge ?? null);
           }}
         >
           {phases.map((p, i) => (
@@ -129,6 +131,18 @@ export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect }
               height={6}
               fill={PHASE_COLORS[p.kind]}
               opacity={active === p ? 1 : 0.6}
+            />
+          ))}
+
+          {ridgeSoars.map((r, i) => (
+            <rect
+              key={i}
+              x={model.xs(derived.t[r.startIdx])}
+              y={H - PAD.b}
+              width={Math.max(1, model.xs(derived.t[r.endIdx]) - model.xs(derived.t[r.startIdx]))}
+              height={6}
+              fill={PHASE_COLORS.ridge}
+              opacity={active === r ? 1 : 0.6}
             />
           ))}
 
