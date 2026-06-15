@@ -1,0 +1,93 @@
+/* Web-only chrome: topbar, hero, and file drop */
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 22px;
+  background: rgba(14, 16, 22, 0.82);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-soft);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark { font-size: 26px; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4)); }
+.brand h1 { margin: 0; font-size: 19px; letter-spacing: 0.2px; }
+.brand p { margin: 0; font-size: 12px; color: var(--muted); }
+.topbar-actions { display: flex; align-items: center; gap: 14px; }
+.filedrop-compact { display: flex; gap: 8px; }
+
+/* ---------- hero / file drop ---------- */
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 40px 20px 80px;
+}
+.filedrop-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(560px, 92vw);
+}
+.filedrop {
+  width: 100%;
+  border: 2px dashed var(--border);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #161a26, #12151f);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.filedrop:hover, .filedrop.dragging {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, #18202f, #12151f);
+  transform: translateY(-1px);
+}
+.filedrop-icon { font-size: 44px; }
+.filedrop-title { font-size: 18px; font-weight: 600; margin-top: 8px; }
+.filedrop-sub { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.filedrop-sub code {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin: 0 2px;
+  font-size: 12px;
+}
+.sample-btn { font-size: 14px; }
+.filedrop-error {
+  color: #fca5a5;
+  background: #3a1d1d;
+  border: 1px solid #5a2a2a;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+.filedrop-error.inline { margin-bottom: 4px; }
+.hero-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.apk-note { color: var(--muted); font-size: 13px; margin: 0; }
+.apk-link-inline { color: var(--accent); }
+.apk-link { font-size: 13px; }

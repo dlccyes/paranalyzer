@@ -25,15 +25,17 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Build web app
+        run: npm run build:web
+        env:
+          VITE_APK_URL: https://github.com/${{ github.repository }}/releases/download/android-latest/app-debug.apk
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist # The folder the action should deploy
-          branch: gh-pages # The branch the action should deploy to
+          folder: apps/web/dist
+          branch: gh-pages
           cname: paranalyzer.approximator.net

@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +23,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Type check
+      - name: Type check all packages
         run: npm run typecheck
 
-      - name: Build
-        run: npm run build
+      - name: Build web app
+        run: npm run build:web
