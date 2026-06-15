@@ -2,6 +2,7 @@ export * from "./types";
 export { parseTrack, detectFormat } from "./parsers";
 export type { SupportedFormat } from "./parsers";
 export { analyzeFlight } from "./analysis/analyze";
+export type { AnalyzeOptions } from "./analysis/analyze";
 export { computeDerived } from "./analysis/derive";
 export { detectPhases, detectCircling, detectGlides, PARAMS } from "./analysis/phases";
 export type { CirclingResult } from "./analysis/phases";
