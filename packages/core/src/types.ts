@@ -161,6 +161,13 @@ export interface RidgeSoar {
   avgAlt: number;
 }
 
+/** XContest score computed by the official igc-xc-score library. */
+export interface XcScore {
+  points: number;
+  distanceM: number;
+  type: string;
+}
+
 /** Whole-flight summary statistics (all SI units). */
 export interface FlightStats {
   start: number;
@@ -188,6 +195,8 @@ export interface FlightStats {
   timeInThermal: number;
   /** Total seconds spent in detected ridge / slope soaring. */
   timeInRidge: number;
+  /** XContest score computed by the official World XContest algorithm. */
+  xcScore: XcScore;
 }
 
 /** Fully analysed flight, the central object the UI renders from. */

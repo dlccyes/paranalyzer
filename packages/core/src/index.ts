@@ -11,6 +11,8 @@ export {
   EARTH_RADIUS_M,
 } from "./analysis/geo";
 export { detectRidgeSoaring, RIDGE_PARAMS } from "./analysis/ridge";
+export { scoreFlight } from "./analysis/score";
+export type { XcScore } from "./types";
 export * from "./units";
 export * from "./colors";
 export { buildFlightRecord, ANALYSIS_VERSION } from "./record";

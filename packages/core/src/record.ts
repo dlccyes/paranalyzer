@@ -1,6 +1,6 @@
 import type { Flight, ParsedTrack } from "./types";
 
-export const ANALYSIS_VERSION = 1;
+export const ANALYSIS_VERSION = 2;
 
 export interface FlightRecord {
   id: string;
@@ -86,5 +86,6 @@ export function buildFlightRecord(
     windFromDeg: stats.wind?.fromDeg,
 
     note: "",
+    xcontestPoints: stats.xcScore.points > 0 ? Math.round(stats.xcScore.points * 100) / 100 : undefined,
   };
 }

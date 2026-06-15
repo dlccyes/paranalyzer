@@ -1,6 +1,7 @@
 import type { Derived, Fix, FlightStats, RidgeSoar, Thermal } from "../types";
 import { haversine } from "./geo";
 import { averageWind } from "./wind";
+import { scoreFlight } from "./score";
 
 const MOVE_THRESHOLD = 2.0;
 const CLIMB_WINDOW_SEC = 30;
@@ -67,6 +68,7 @@ export function computeStats(
     wind: averageWind(thermals.map((t) => ({ wind: t.wind, weight: t.turns }))),
     timeInThermal,
     timeInRidge,
+    xcScore: scoreFlight(fixes, start, end),
   };
 }
 

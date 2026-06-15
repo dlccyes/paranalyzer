@@ -8,6 +8,7 @@ import {
   removeSiteOption,
   clearAllData,
 } from "../data/db";
+import { recalcAll } from "../data/recalc";
 import { exportBackup, importBackup } from "../data/backup";
 import { connectDrive, disconnectDrive, backupToDrive, restoreFromDrive } from "../data/drive";
 import { getPlatform } from "../platform";
@@ -18,6 +19,7 @@ export function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [recalcProgress, setRecalcProgress] = useState<string | null>(null);
   const [newSiteName, setNewSiteName] = useState("");
   const [editingSiteIdx, setEditingSiteIdx] = useState<number | null>(null);
   const [editSiteValue, setEditSiteValue] = useState("");
@@ -270,6 +272,35 @@ export function SettingsScreen() {
             </p>
           </section>
         )}
+
+        <section className="settings-section">
+          <h3>Maintenance</h3>
+          <div className="settings-row">
+            <button
+              className="btn btn-ghost"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                setRecalcProgress("Starting…");
+                try {
+                  const { updated, failed } = await recalcAll((done, total) => {
+                    setRecalcProgress(`${done} / ${total}`);
+                  });
+                  setRecalcProgress(null);
+                  toast(`Recalculated ${updated} flight${updated === 1 ? "" : "s"}${failed ? ` (${failed} failed)` : ""}`);
+                } catch (err) {
+                  setRecalcProgress(null);
+                  toast(err instanceof Error ? err.message : "Error");
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {recalcProgress ? `Recalculating… ${recalcProgress}` : "Recalculate all flights"}
+            </button>
+          </div>
+          <p className="settings-note">Re-runs analysis on every stored flight. Updates scores, ridge detection, and all derived stats. Keeps your notes, sites, and XContest links.</p>
+        </section>
 
         <section className="settings-section">
           <h3>Data</h3>

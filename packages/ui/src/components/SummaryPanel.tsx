@@ -59,6 +59,11 @@ export function SummaryPanel({ flight, fmt, dateFormat = "dmy" }: Props) {
           {stat("Straight dist.", fmt.distance(stats.straightDistance), "takeoff → landing")}
           {stat("Free distance", fmt.distance(stats.freeDistance), "up to 3 turnpoints")}
           {stat("Avg ground speed", fmt.speed(stats.avgSpeed))}
+          {stats.xcScore.points > 0 && stat(
+            "XContest score",
+            `${stats.xcScore.points.toFixed(2)} pts`,
+            stats.xcScore.type || undefined,
+          )}
         </div>
       </div>
     </section>

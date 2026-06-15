@@ -72,6 +72,10 @@ export {
 export { importFlights, commitDuplicate } from "./data/importFlight";
 export type { ImportResult, DuplicateInfo } from "./data/importFlight";
 
+// Data — recalc
+export { recalcAll } from "./data/recalc";
+export type { RecalcResult } from "./data/recalc";
+
 // Data — model
 export type {
   FieldId,
@@ -91,5 +95,5 @@ export {
   DB_SCHEMA_VERSION,
 } from "./data/model";
 
-// Re-export FlightRecord from core for convenience
-export type { FlightRecord } from "@paranalyzer/core";
+// Re-export FlightRecord and XcScore from core for convenience
+export type { FlightRecord, XcScore } from "@paranalyzer/core";

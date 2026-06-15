@@ -16,11 +16,24 @@ export function analyzeFlight(parsed: ParsedTrack): Flight {
   );
   const ridgeSoars = detectRidgeSoaring(fixes, derived, start, end, circlingIntervals);
 
+  // Remove glides that substantially overlap a ridge soaring span (>30% by time)
+  // so ridge flight isn't double-counted as a glide.
+  const filteredGlides = glides.filter((g) =>
+    !ridgeSoars.some((r) => {
+      const oa = Math.max(g.startIdx, r.startIdx);
+      const ob = Math.min(g.endIdx, r.endIdx);
+      if (ob <= oa) return false;
+      const overlapSec = derived.t[ob] - derived.t[oa];
+      const glideSec = derived.t[g.endIdx] - derived.t[g.startIdx];
+      return glideSec > 0 && overlapSec / glideSec > 0.3;
+    }),
+  );
+
   const stats = computeStats(fixes, derived, start, end, thermals, ridgeSoars);
 
   return {
     meta, fixes, derived, stats,
-    thermals, badTurns, glides, phases,
+    thermals, badTurns, glides: filteredGlides, phases,
     range: [start, end],
     ridgeSoars,
   };
