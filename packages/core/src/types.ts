@@ -129,6 +129,7 @@ export interface Glide extends PhaseBase {
 }
 
 export type Phase = Thermal | Glide | BadTurn;
+export type AnyPhase = Phase | RidgeSoar;
 
 /** Estimated wind, meteorological convention (direction wind blows FROM). */
 export interface WindEstimate {

@@ -1,11 +1,11 @@
 import { useMemo, useRef } from "react";
-import type { Flight, Phase } from "@paranalyzer/core";
+import type { AnyPhase, Flight, Phase } from "@paranalyzer/core";
 import { PHASE_COLORS, varioColor, formatClock, type UnitFormatter } from "@paranalyzer/core";
 
 interface Props {
   flight: Flight;
   fmt: UnitFormatter;
-  active: Phase | null;
+  active: AnyPhase | null;
   hoverIdx: number | null;
   onHoverIdx: (i: number | null) => void;
   onSelect: (p: Phase | null) => void;

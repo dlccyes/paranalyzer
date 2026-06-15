@@ -4,6 +4,7 @@ export const PHASE_COLORS = {
   thermal: "#ff7043",
   glide: "#42a5f5",
   badturn: "#a78bfa",
+  ridge: "#34d399",
 } as const;
 
 const VARIO_STOPS: { max: number; color: string }[] = [

@@ -1,4 +1,4 @@
-import type { Phase, Thermal } from "@paranalyzer/core";
+import type { AnyPhase, Thermal } from "@paranalyzer/core";
 import { compassName, formatClock, formatDuration, type UnitFormatter } from "@paranalyzer/core";
 import { WindBadge } from "./WindBadge";
 import { useSortableRows } from "./useSortableRows";
@@ -7,9 +7,9 @@ interface Props {
   thermals: Thermal[];
   fmt: UnitFormatter;
   tz: number;
-  selected: Phase | null;
-  onSelect: (p: Phase | null) => void;
-  onHover: (p: Phase | null) => void;
+  selected: AnyPhase | null;
+  onSelect: (p: Thermal | null) => void;
+  onHover: (p: Thermal | null) => void;
 }
 
 const COLUMNS = [

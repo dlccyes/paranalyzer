@@ -8,13 +8,13 @@ import {
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
-import type { Flight, Phase } from "@paranalyzer/core";
+import type { AnyPhase, Flight } from "@paranalyzer/core";
 import { buildVarioSegments, PHASE_COLORS, VARIO_LEGEND } from "@paranalyzer/core";
 
 interface Props {
   flight: Flight;
-  highlight: Phase | null;
-  zoomTo: Phase | null;
+  highlight: AnyPhase | null;
+  zoomTo: AnyPhase | null;
   hoverIdx: number | null;
 }
 

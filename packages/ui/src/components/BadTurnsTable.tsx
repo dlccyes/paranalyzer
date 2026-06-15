@@ -1,4 +1,4 @@
-import type { BadTurn, Phase } from "@paranalyzer/core";
+import type { AnyPhase, BadTurn } from "@paranalyzer/core";
 import { formatClock, formatDuration, type UnitFormatter } from "@paranalyzer/core";
 import { useSortableRows } from "./useSortableRows";
 
@@ -6,9 +6,9 @@ interface Props {
   badTurns: BadTurn[];
   fmt: UnitFormatter;
   tz: number;
-  selected: Phase | null;
-  onSelect: (p: Phase | null) => void;
-  onHover: (p: Phase | null) => void;
+  selected: AnyPhase | null;
+  onSelect: (p: BadTurn | null) => void;
+  onHover: (p: BadTurn | null) => void;
 }
 
 const COLUMNS = [

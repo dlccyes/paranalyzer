@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Flight, Phase } from "@paranalyzer/core";
+import type { AnyPhase, Flight, Phase } from "@paranalyzer/core";
 import { makeFormatter, type UnitSystem } from "@paranalyzer/core";
 import { SummaryPanel } from "./components/SummaryPanel";
 import { FlightMap } from "./components/FlightMap";
@@ -29,8 +29,8 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
     onUnitsChange?.(next);
   }, [onUnitsChange]);
 
-  const [selected, setSelected] = useState<Phase | null>(null);
-  const [hovered, setHovered] = useState<Phase | null>(null);
+  const [selected, setSelected] = useState<AnyPhase | null>(null);
+  const [hovered, setHovered] = useState<AnyPhase | null>(null);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +42,8 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
 
   const fmt = useMemo(() => makeFormatter(units), [units]);
   const activePhase = hovered ?? selected;
+  const selectPhase = (p: Phase | null) => setSelected(p);
+  const hoverPhase = (p: Phase | null) => setHovered(p);
   const tz = flight.meta.tzOffsetMinutes ?? 0;
 
   return (
@@ -67,29 +69,32 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
           fmt={fmt}
           tz={tz}
           selected={selected}
-          onSelect={setSelected}
-          onHover={setHovered}
+          onSelect={selectPhase}
+          onHover={hoverPhase}
         />
         <BadTurnsTable
           badTurns={flight.badTurns}
           fmt={fmt}
           tz={tz}
           selected={selected}
-          onSelect={setSelected}
-          onHover={setHovered}
+          onSelect={selectPhase}
+          onHover={hoverPhase}
         />
         <GlidesTable
           glides={flight.glides}
           fmt={fmt}
           tz={tz}
           selected={selected}
-          onSelect={setSelected}
-          onHover={setHovered}
+          onSelect={selectPhase}
+          onHover={hoverPhase}
         />
         <RidgeSoarsTable
           ridgeSoars={flight.ridgeSoars}
           fmt={fmt}
           tz={tz}
+          selected={selected}
+          onSelect={setSelected}
+          onHover={setHovered}
         />
       </div>
       <footer className="foot">

@@ -1,4 +1,4 @@
-import type { RidgeSoar } from "@paranalyzer/core";
+import type { AnyPhase, RidgeSoar } from "@paranalyzer/core";
 import { formatClock, formatDuration, type UnitFormatter } from "@paranalyzer/core";
 import { useSortableRows } from "./useSortableRows";
 
@@ -6,6 +6,9 @@ interface Props {
   ridgeSoars: RidgeSoar[];
   fmt: UnitFormatter;
   tz: number;
+  selected: AnyPhase | null;
+  onSelect: (r: RidgeSoar | null) => void;
+  onHover: (r: RidgeSoar | null) => void;
 }
 
 const COLUMNS = [
@@ -17,7 +20,7 @@ const COLUMNS = [
   { key: "passes", accessor: (r: RidgeSoar) => r.passes },
 ];
 
-export function RidgeSoarsTable({ ridgeSoars, fmt, tz }: Props) {
+export function RidgeSoarsTable({ ridgeSoars, fmt, tz, selected, onSelect, onHover }: Props) {
   const { sorted, toggle, indicator } = useSortableRows(ridgeSoars, COLUMNS);
   const origIndex = new Map(ridgeSoars.map((r, i) => [r, i + 1]));
 
@@ -46,9 +49,14 @@ export function RidgeSoarsTable({ ridgeSoars, fmt, tz }: Props) {
                 <th className="sortable" title="Heading reversals (informational)" onClick={() => toggle("passes")}>Passes{indicator("passes")}</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody onMouseLeave={() => onHover(null)}>
               {sorted.map((r) => (
-                <tr key={origIndex.get(r)}>
+                <tr
+                  key={origIndex.get(r)}
+                  className={selected === r ? "row-selected" : ""}
+                  onClick={() => onSelect(selected === r ? null : r)}
+                  onMouseEnter={() => onHover(r)}
+                >
                   <td className="dim">{origIndex.get(r)}</td>
                   <td>{formatClock(r.startTime, tz)}</td>
                   <td>{formatDuration(r.duration)}</td>

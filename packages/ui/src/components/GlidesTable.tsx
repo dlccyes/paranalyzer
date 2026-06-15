@@ -1,4 +1,4 @@
-import type { Glide, Phase, WindEstimate } from "@paranalyzer/core";
+import type { AnyPhase, Glide, WindEstimate } from "@paranalyzer/core";
 import { angleDiff, compassName, formatClock, formatDuration, type UnitFormatter } from "@paranalyzer/core";
 import { WindBadge } from "./WindBadge";
 import { Arrow } from "./Arrow";
@@ -8,9 +8,9 @@ interface Props {
   glides: Glide[];
   fmt: UnitFormatter;
   tz: number;
-  selected: Phase | null;
-  onSelect: (p: Phase | null) => void;
-  onHover: (p: Phase | null) => void;
+  selected: AnyPhase | null;
+  onSelect: (p: Glide | null) => void;
+  onHover: (p: Glide | null) => void;
 }
 
 const COLUMNS = [
