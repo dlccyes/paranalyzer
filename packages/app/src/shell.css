@@ -133,6 +133,11 @@ body,
   -webkit-overflow-scrolling: touch;
 }
 
+.list-dashboard {
+  margin: 12px;
+  flex-shrink: 0;
+}
+
 /* ── Flights table ────────────────────────────────── */
 
 .flights-table-wrap {

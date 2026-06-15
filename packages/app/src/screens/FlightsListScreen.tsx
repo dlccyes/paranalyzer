@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loadDb, getSettings, saveSettings, deleteFlight } from "../data/db";
 import { deleteTrack } from "../data/trackStore";
-import type { FlightRecord, Settings } from "../data/model";
+import { ANALYSIS_VERSION, type FlightRecord, type Settings } from "../data/model";
+import { recalcAll } from "../data/recalc";
 import { FlightsTable } from "../components/FlightsTable";
 import { ColumnConfigSheet } from "../components/ColumnConfigSheet";
 import { FilterBar } from "../components/FilterBar";
 import { ImportButton } from "../components/ImportButton";
+import { TimeBreakdownChart } from "@paranalyzer/ui";
 
 export function FlightsListScreen() {
   const navigate = useNavigate();
@@ -22,6 +24,14 @@ export function FlightsListScreen() {
       if (!cancelled) {
         setFlights(doc.flights);
         setSettings(cfg);
+      }
+      const stale = doc.flights.some((f) =>
+        f.analysisVersion < ANALYSIS_VERSION || f.timeInGlide == null,
+      );
+      if (stale) {
+        await recalcAll();
+        const refreshed = await loadDb();
+        if (!cancelled) setFlights([...refreshed.flights]);
       }
     })();
     return () => { cancelled = true; };
@@ -45,6 +55,18 @@ export function FlightsListScreen() {
       if (f.glider) seen.add(f.glider);
     }
     return [...seen].sort();
+  }, [flights]);
+
+  const timeBreakdown = useMemo(() => {
+    return flights.reduce(
+      (acc, f) => ({
+        airtime: acc.airtime + f.airtime,
+        thermal: acc.thermal + f.timeInThermal,
+        glide: acc.glide + (f.timeInGlide ?? 0),
+        ridge: acc.ridge + f.timeInRidge,
+      }),
+      { airtime: 0, thermal: 0, glide: 0, ridge: 0 },
+    );
   }, [flights]);
 
   if (!settings) {
@@ -85,6 +107,13 @@ export function FlightsListScreen() {
           gliders={gliders}
         />
       )}
+
+      <details className="dashboard-panel list-dashboard card" open>
+        <summary>
+          <div className="panel-title">Dashboard</div>
+        </summary>
+        <TimeBreakdownChart breakdown={timeBreakdown} />
+      </details>
 
       <div className="list-body">
         <FlightsTable

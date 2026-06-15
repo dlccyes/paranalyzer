@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Flight } from "@paranalyzer/core";
 import { parseTrack } from "@paranalyzer/core";
-import { AnalysisView } from "@paranalyzer/ui";
+import { AnalysisView, TimeBreakdownChart } from "@paranalyzer/ui";
 import {
   getFlight,
   updateNote,
@@ -115,12 +115,6 @@ export function FlightDetailScreen() {
             onSiteChange={handleSiteChange}
           />
         </div>
-        {rec.xcontestPoints != null && (
-          <div className="detail-field">
-            <label className="detail-field-label">XC pts</label>
-            <span className="detail-field-value">{rec.xcontestPoints.toFixed(2)}</span>
-          </div>
-        )}
         <div className="detail-field">
           <label className="detail-field-label">XContest link</label>
           <div className="xc-url-row">
@@ -145,6 +139,21 @@ export function FlightDetailScreen() {
           </div>
         </div>
       </div>
+      {flight && (
+        <details className="dashboard-panel summary-dashboard" open>
+          <summary>
+            <div className="panel-title">Dashboard</div>
+          </summary>
+          <TimeBreakdownChart
+            breakdown={{
+              airtime: flight.stats.airtime,
+              thermal: flight.stats.timeInThermal,
+              ridge: flight.stats.timeInRidge,
+              glide: flight.stats.timeInGlide,
+            }}
+          />
+        </details>
+      )}
       <div className="note-editor">
         <div className="panel-title">Note</div>
         <div className="note-body">

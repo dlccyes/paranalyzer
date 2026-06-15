@@ -61,7 +61,7 @@ function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
     col("pilot", (r) => r.pilot ?? "—"),
     col("airtime", (r) => formatDuration(r.airtime, true), sumDuration("airtime", true)),
     col("timeInThermal", (r) => formatDurationHM(r.timeInThermal), sumDuration("timeInThermal")),
-    col("timeInGlide", (r) => formatDurationHM(r.timeInGlide ?? 0), sumDuration("timeInGlide")),
+    col("timeInGlide", (r) => r.timeInGlide != null ? formatDurationHM(r.timeInGlide) : "—", sumDuration("timeInGlide")),
     col("timeInRidge", (r) => formatDurationHM(r.timeInRidge), sumDuration("timeInRidge")),
     col("maxAlt", (r) => fmt.altitude(r.maxAlt)),
     col("maxAltGain", (r) => fmt.altitude(r.maxAltGain)),
