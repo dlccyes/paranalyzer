@@ -52,7 +52,22 @@ function patchGradle() {
     return false;
   }
 
-  const patched = source.replace(/^\s*jcenter\(\)\n/gm, "");
+  const patched = source.replace(
+    /^(\s*)repositories\s*\{\n([\s\S]*?)^(\s*)\}/gm,
+    (block, blockIndent, body, closeIndent) => {
+      const repoIndent = `${blockIndent}    `;
+      const repos = body
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line && line !== "jcenter()")
+        .filter((line, index, lines) => lines.indexOf(line) === index);
+
+      if (!repos.includes("google()")) repos.unshift("google()");
+      if (!repos.includes("mavenCentral()")) repos.push("mavenCentral()");
+
+      return `${blockIndent}repositories {\n${repos.map((repo) => `${repoIndent}${repo}`).join("\n")}\n${closeIndent}}`;
+    },
+  );
   if (patched === source) return false;
 
   writeFileSync(gradlePath, patched);
