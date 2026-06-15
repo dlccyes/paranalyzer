@@ -8,6 +8,7 @@
     "apps/*"
   ],
   "scripts": {
+    "postinstall": "node scripts/patch-google-auth-plugin.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build:web": "npm run build -w @paranalyzer/web",
     "build:mobile": "npm run build -w @paranalyzer/mobile",
