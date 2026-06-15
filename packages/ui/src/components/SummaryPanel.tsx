@@ -46,6 +46,10 @@ export function SummaryPanel({ flight, fmt }: Props) {
 
         <div className="stat-grid">
           {stat("Airtime", formatDuration(stats.airtime, true))}
+          {stat("Time in thermal", formatDuration(stats.timeInThermal),
+            stats.airtime > 0 ? `${Math.round((stats.timeInThermal / stats.airtime) * 100)}% of airtime` : undefined)}
+          {stat("Time ridge soaring", formatDuration(stats.timeInRidge),
+            stats.airtime > 0 ? `${Math.round((stats.timeInRidge / stats.airtime) * 100)}% of airtime` : undefined)}
           {stat("Max altitude", fmt.altitude(stats.maxAlt))}
           {stat("Max alt. gain", fmt.altitude(stats.maxAltGain))}
           {stat("Max climb", fmt.vario(stats.maxClimb), "sustained 30 s")}

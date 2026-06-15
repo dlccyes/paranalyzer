@@ -3,9 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { Flight } from "@paranalyzer/core";
 import { parseTrack, analyzeFlight } from "@paranalyzer/core";
 import { AnalysisView } from "@paranalyzer/ui";
-import { getFlight, updateNote, getSettings } from "../data/db";
-import { readTrack } from "../data/trackStore";
+import { getFlight, updateNote, updateSite, deleteFlight, getSettings } from "../data/db";
+import { readTrack, deleteTrack } from "../data/trackStore";
 import { NoteEditor } from "../components/NoteEditor";
+import { SiteSelect } from "../components/SiteSelect";
 import type { FlightRecord } from "../data/model";
 import type { UnitSystem } from "@paranalyzer/core";
 
@@ -17,6 +18,7 @@ export function FlightDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [units, setUnits] = useState<UnitSystem>("metric");
+  const [sites, setSites] = useState<string[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -26,6 +28,7 @@ export function FlightDetailScreen() {
         const cfg = await getSettings();
         if (cancelled) return;
         setUnits(cfg.units);
+        setSites(cfg.sites);
         const record = getFlight(id);
         if (!record) { setNotFound(true); return; }
         setRec(record);
@@ -40,6 +43,21 @@ export function FlightDetailScreen() {
     })();
     return () => { cancelled = true; };
   }, [id]);
+
+  const handleSiteChange = async (site: string, updatedSites: string[]) => {
+    if (!rec) return;
+    await updateSite(rec.id, site);
+    setRec((r) => r ? { ...r, site } : r);
+    setSites(updatedSites);
+  };
+
+  const handleDelete = async () => {
+    if (!rec) return;
+    if (!confirm("Delete this flight permanently?")) return;
+    await deleteTrack(rec.trackRef);
+    await deleteFlight(rec.id);
+    navigate("/", { replace: true });
+  };
 
   if (notFound) {
     return (
@@ -57,6 +75,9 @@ export function FlightDetailScreen() {
       <header className="app-header">
         <button className="btn btn-sm btn-ghost" onClick={() => navigate(-1)}>← Back</button>
         <span className="app-title">{rec?.fileName ?? "Flight"}</span>
+        <button className="btn btn-sm btn-danger" onClick={handleDelete}>
+          Delete
+        </button>
       </header>
 
       <div className="detail-body">
@@ -69,6 +90,16 @@ export function FlightDetailScreen() {
               units={units}
               onUnitsChange={setUnits}
             />
+            <div className="detail-fields">
+              <div className="detail-field">
+                <label className="detail-field-label">Site</label>
+                <SiteSelect
+                  value={rec.site ?? ""}
+                  sites={sites}
+                  onSiteChange={handleSiteChange}
+                />
+              </div>
+            </div>
             <NoteEditor
               value={rec.note}
               onSave={(text) => updateNote(rec.id, text)}

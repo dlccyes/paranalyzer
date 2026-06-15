@@ -4,6 +4,7 @@ import { App as CapApp } from "@capacitor/app";
 import { FlightsListScreen } from "./screens/FlightsListScreen";
 import { FlightDetailScreen } from "./screens/FlightDetailScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { maybeAutoBackup } from "./data/drive";
 import { loadDb } from "./data/db";
 
@@ -27,5 +28,9 @@ export default function App() {
     return () => { listener.then((h) => h.remove()); };
   }, []);
 
-  return <RouterProvider router={router} />;
+  return (
+    <ErrorBoundary>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
+  );
 }

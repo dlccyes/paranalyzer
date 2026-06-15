@@ -10,7 +10,7 @@ import {
   type ColumnOrderState,
 } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { FlightRecord, FieldId, SortRule, ColumnConfig, FilterRule } from "../data/model";
 import { FIELD_LABELS } from "../data/model";
 import { makeFormatter, formatDuration, formatDate, formatClock, compassName } from "@paranalyzer/core";
@@ -98,22 +98,32 @@ export function FlightsTable({
 }: Props) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
-
-  const columnOrder: ColumnOrderState = columns.map((c) => c.id);
-  const visibility: VisibilityState = Object.fromEntries(columns.map((c) => [c.id, c.visible]));
-
   const [sorting, setSorting] = useState<SortingState>([
     { id: sortRule.field, desc: sortRule.dir === "desc" },
   ]);
 
-  const filteredData = flights.filter((rec) =>
-    filters.every((rule) => makeFilterFn(rule)(rec)),
+  // Memoize all inputs to useReactTable — unstable references cause an infinite render loop.
+  const tableColumns = useMemo(() => buildColumns(units), [units]);
+
+  const columnOrder = useMemo<ColumnOrderState>(
+    () => columns.map((c) => c.id),
+    [columns],
+  );
+
+  const columnVisibility = useMemo<VisibilityState>(
+    () => Object.fromEntries(columns.map((c) => [c.id, c.visible])),
+    [columns],
+  );
+
+  const filteredData = useMemo(
+    () => flights.filter((rec) => filters.every((rule) => makeFilterFn(rule)(rec))),
+    [flights, filters],
   );
 
   const table = useReactTable({
     data: filteredData,
-    columns: buildColumns(units),
-    state: { sorting, columnVisibility: visibility, columnOrder },
+    columns: tableColumns,
+    state: { sorting, columnVisibility, columnOrder },
     onSortingChange: (updater) => {
       const next = typeof updater === "function" ? updater(sorting) : updater;
       setSorting(next);

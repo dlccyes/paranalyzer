@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSettings, saveSettings } from "../data/db";
+import { getSettings, saveSettings, addSiteOption, renameSiteOption, removeSiteOption } from "../data/db";
 import { exportBackup, importBackup } from "../data/backup";
 import { connectDrive, disconnectDrive, backupToDrive, restoreFromDrive } from "../data/drive";
 import { FilePicker } from "@capawesome/capacitor-file-picker";
@@ -11,6 +11,9 @@ export function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [newSiteName, setNewSiteName] = useState("");
+  const [editingSiteIdx, setEditingSiteIdx] = useState<number | null>(null);
+  const [editSiteValue, setEditSiteValue] = useState("");
 
   useEffect(() => {
     getSettings().then(setSettings);
@@ -45,6 +48,29 @@ export function SettingsScreen() {
     toast(`Imported ${imported} flights, skipped ${skipped}`);
   };
 
+  const handleAddSite = async () => {
+    const name = newSiteName.trim();
+    if (!name || !settings) return;
+    const updated = await addSiteOption(name);
+    setNewSiteName("");
+    setSettings({ ...settings, sites: updated });
+  };
+
+  const handleRenameSite = async (oldName: string) => {
+    const trimmed = editSiteValue.trim();
+    if (!trimmed || !settings) { setEditingSiteIdx(null); return; }
+    const updated = await renameSiteOption(oldName, trimmed);
+    setEditingSiteIdx(null);
+    setSettings({ ...settings, sites: updated });
+  };
+
+  const handleRemoveSite = async (name: string) => {
+    if (!settings) return;
+    if (!confirm(`Remove site "${name}"? It will be cleared from all flights.`)) return;
+    const updated = await removeSiteOption(name);
+    setSettings({ ...settings, sites: updated });
+  };
+
   if (!settings) return <div className="screen"><div className="loading">Loading…</div></div>;
 
   const driveConnected = settings.drive?.connected ?? false;
@@ -71,6 +97,58 @@ export function SettingsScreen() {
                 {sys === "metric" ? "Metric" : "Imperial"}
               </button>
             ))}
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <h3>Sites</h3>
+          <div className="sites-list">
+            {settings.sites.length === 0 && (
+              <p className="settings-note">No sites yet — add one below or set it on a flight.</p>
+            )}
+            {settings.sites.map((s, i) => (
+              <div key={s} className="site-list-row">
+                {editingSiteIdx === i ? (
+                  <input
+                    className="site-edit-input"
+                    autoFocus
+                    value={editSiteValue}
+                    onChange={(e) => setEditSiteValue(e.target.value)}
+                    onBlur={() => handleRenameSite(s)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleRenameSite(s); if (e.key === "Escape") setEditingSiteIdx(null); }}
+                  />
+                ) : (
+                  <span className="site-list-name">{s}</span>
+                )}
+                <div className="site-list-actions">
+                  <button
+                    className="btn btn-xs btn-ghost"
+                    onClick={() => { setEditingSiteIdx(i); setEditSiteValue(s); }}
+                  >
+                    Rename
+                  </button>
+                  <button
+                    className="btn btn-xs btn-ghost"
+                    style={{ color: "var(--clr-danger)" }}
+                    onClick={() => handleRemoveSite(s)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="site-add-row">
+            <input
+              className="site-add-input"
+              placeholder="New site name…"
+              value={newSiteName}
+              onChange={(e) => setNewSiteName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleAddSite(); }}
+            />
+            <button className="btn btn-sm" onClick={handleAddSite} disabled={!newSiteName.trim()}>
+              Add
+            </button>
           </div>
         </section>
 

@@ -38,6 +38,7 @@ export interface Settings {
   filters: FilterRule[];
   sort: SortRule;
   units: "metric" | "imperial";
+  sites: string[];
   lastBackupAt?: number;
   drive?: { connected: boolean };
 }
@@ -91,4 +92,5 @@ export const DEFAULT_SETTINGS: Settings = {
   filters: [],
   sort: { field: "startTime", dir: "desc" },
   units: "metric",
+  sites: [],
 };

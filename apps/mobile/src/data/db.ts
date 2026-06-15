@@ -87,3 +87,46 @@ export async function saveSettings(settings: Settings): Promise<void> {
   doc.settings = settings;
   await saveDb(doc);
 }
+
+export async function updateSite(id: string, site: string): Promise<void> {
+  const doc = await loadDb();
+  const rec = doc.flights.find((f) => f.id === id);
+  if (rec) rec.site = site;
+  await saveDb(doc);
+}
+
+export async function addSiteOption(name: string): Promise<string[]> {
+  const doc = await loadDb();
+  const trimmed = name.trim();
+  if (trimmed && !doc.settings.sites.includes(trimmed)) {
+    doc.settings.sites = [...doc.settings.sites, trimmed].sort();
+  }
+  await saveDb(doc);
+  return doc.settings.sites;
+}
+
+export async function renameSiteOption(oldName: string, newName: string): Promise<string[]> {
+  const doc = await loadDb();
+  const trimmed = newName.trim();
+  if (!trimmed || trimmed === oldName) return doc.settings.sites;
+  doc.settings.sites = doc.settings.sites
+    .map((s) => (s === oldName ? trimmed : s))
+    .sort();
+  // Cascade to flights using the old name
+  for (const f of doc.flights) {
+    if (f.site === oldName) f.site = trimmed;
+  }
+  await saveDb(doc);
+  return doc.settings.sites;
+}
+
+export async function removeSiteOption(name: string): Promise<string[]> {
+  const doc = await loadDb();
+  doc.settings.sites = doc.settings.sites.filter((s) => s !== name);
+  // Clear site on affected flights (don't delete the flights)
+  for (const f of doc.flights) {
+    if (f.site === name) f.site = "";
+  }
+  await saveDb(doc);
+  return doc.settings.sites;
+}
