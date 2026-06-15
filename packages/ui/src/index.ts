@@ -6,6 +6,7 @@ export { Barogram } from "./components/Barogram";
 export { ThermalsTable } from "./components/ThermalsTable";
 export { BadTurnsTable } from "./components/BadTurnsTable";
 export { GlidesTable } from "./components/GlidesTable";
+export { RidgeSoarsTable } from "./components/RidgeSoarsTable";
 export { UnitToggle } from "./components/UnitToggle";
 export { WindBadge } from "./components/WindBadge";
 export { Arrow } from "./components/Arrow";

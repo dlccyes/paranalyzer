@@ -7,6 +7,7 @@ import { Barogram } from "./components/Barogram";
 import { ThermalsTable } from "./components/ThermalsTable";
 import { BadTurnsTable } from "./components/BadTurnsTable";
 import { GlidesTable } from "./components/GlidesTable";
+import { RidgeSoarsTable } from "./components/RidgeSoarsTable";
 import { UnitToggle } from "./components/UnitToggle";
 
 export interface AnalysisViewProps {
@@ -84,6 +85,11 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
           selected={selected}
           onSelect={setSelected}
           onHover={setHovered}
+        />
+        <RidgeSoarsTable
+          ridgeSoars={flight.ridgeSoars}
+          fmt={fmt}
+          tz={tz}
         />
       </div>
       <footer className="foot">
