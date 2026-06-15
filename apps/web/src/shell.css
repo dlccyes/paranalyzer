@@ -172,6 +172,16 @@ body,
   background: var(--clr-surface);
 }
 
+.flights-table tfoot td {
+  position: sticky;
+  bottom: 0;
+  background: var(--clr-surface);
+  border-top: 2px solid var(--clr-border);
+  border-bottom: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .empty-row {
   text-align: center;
   color: var(--clr-muted);
