@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { getSettings, saveSettings, addSiteOption, renameSiteOption, removeSiteOption } from "../data/db";
 import { exportBackup, importBackup } from "../data/backup";
 import { connectDrive, disconnectDrive, backupToDrive, restoreFromDrive } from "../data/drive";
-import { FilePicker } from "@capawesome/capacitor-file-picker";
 import type { Settings } from "../data/model";
 
 export function SettingsScreen() {
@@ -37,13 +36,24 @@ export function SettingsScreen() {
   };
 
   const handleExport = async () =>
-    run(async () => { await exportBackup(); }, "Backup saved to Documents");
+    run(async () => { await exportBackup(); }, "Backup downloaded");
 
   const handleImport = async () => {
-    const result = await FilePicker.pickFiles({ types: ["application/json", "text/*"], limit: 1, readData: true });
-    const file = result.files[0];
+    const file = await new Promise<File | null>((resolve) => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json,.json,text/*";
+      input.style.display = "none";
+      document.body.appendChild(input);
+      input.addEventListener("change", () => {
+        const picked = input.files?.[0] ?? null;
+        input.remove();
+        resolve(picked);
+      }, { once: true });
+      input.click();
+    });
     if (!file) return;
-    const json = file.data ? atob(file.data) : "";
+    const json = await file.text();
     const { imported, skipped } = await importBackup(json, "merge");
     toast(`Imported ${imported} flights, skipped ${skipped}`);
   };
