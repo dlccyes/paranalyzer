@@ -5,6 +5,10 @@ import { exportBackup, importBackup } from "../data/backup";
 import { connectDrive, disconnectDrive, backupToDrive, restoreFromDrive } from "../data/drive";
 import type { Settings } from "../data/model";
 
+const APK_URL =
+  (import.meta.env.VITE_APK_URL as string | undefined) ??
+  "https://github.com/dlccyes/paranalyzer/releases/download/android-latest/paranalyzer.apk";
+
 export function SettingsScreen() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -220,6 +224,16 @@ export function SettingsScreen() {
               Last backup: {new Date(settings.lastBackupAt).toLocaleString()}
             </p>
           )}
+        </section>
+
+        <section className="settings-section">
+          <h3>Android app</h3>
+          <a className="btn" href={APK_URL} download>
+            📲 Download Android app
+          </a>
+          <p className="settings-note">
+            Enable "Install unknown apps" for your browser to sideload.
+          </p>
         </section>
 
         <section className="settings-section">
