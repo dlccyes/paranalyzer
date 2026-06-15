@@ -102,14 +102,8 @@ export function FlightDetailScreen() {
       <div className="detail-body">
         {error && <div className="error-banner">{error}</div>}
         {!flight && !error && <div className="loading">Analyzing…</div>}
-        {flight && rec && (
+        {rec && (
           <>
-            <AnalysisView
-              flight={flight}
-              units={units}
-              dateFormat={dateFormat}
-              onUnitsChange={setUnits}
-            />
             <div className="detail-fields">
               <div className="detail-field">
                 <label className="detail-field-label">Site</label>
@@ -154,6 +148,14 @@ export function FlightDetailScreen() {
               onSave={(text) => updateNote(rec.id, text)}
             />
           </>
+        )}
+        {flight && rec && (
+          <AnalysisView
+            flight={flight}
+            units={units}
+            dateFormat={dateFormat}
+            onUnitsChange={setUnits}
+          />
         )}
       </div>
     </div>

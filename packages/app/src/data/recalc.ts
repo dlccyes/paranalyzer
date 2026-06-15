@@ -26,14 +26,11 @@ export async function recalcAll(onProgress?: (done: number, total: number) => vo
         id: rec.id,
         trackRef: rec.trackRef,
         importedAt: rec.importedAt,
-      });
-      // Preserve user-entered fields
-      await updateFlight(rec.id, {
-        ...recomputed,
-        note: rec.note,
         site: rec.site,
+        note: rec.note,
         xcontestUrl: rec.xcontestUrl,
       });
+      await updateFlight(rec.id, recomputed);
       updated++;
     } catch {
       failed++;

@@ -80,14 +80,6 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
           onSelect={selectPhase}
           onHover={hoverPhase}
         />
-        <GlidesTable
-          glides={flight.glides}
-          fmt={fmt}
-          tz={tz}
-          selected={selected}
-          onSelect={selectPhase}
-          onHover={hoverPhase}
-        />
         <RidgeSoarsTable
           ridgeSoars={flight.ridgeSoars}
           fmt={fmt}
@@ -95,6 +87,14 @@ export function AnalysisView({ flight, units: unitsProp, onUnitsChange, dateForm
           selected={selected}
           onSelect={setSelected}
           onHover={setHovered}
+        />
+        <GlidesTable
+          glides={flight.glides}
+          fmt={fmt}
+          tz={tz}
+          selected={selected}
+          onSelect={selectPhase}
+          onHover={hoverPhase}
         />
       </div>
       <footer className="foot">

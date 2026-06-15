@@ -45,7 +45,7 @@ export interface FlightRecord {
 export function buildFlightRecord(
   parsed: ParsedTrack,
   flight: Flight,
-  opts: { id: string; trackRef: string; importedAt?: number },
+  opts: { id: string; trackRef: string; importedAt?: number; site?: string; note?: string; xcontestUrl?: string },
 ): FlightRecord {
   const { meta } = parsed;
   const { stats, thermals, glides, ridgeSoars } = flight;
@@ -61,7 +61,7 @@ export function buildFlightRecord(
     startTime: stats.start,
     tzOffsetMinutes: meta.tzOffsetMinutes,
     pilot: meta.pilot,
-    site: meta.site,
+    site: opts.site ?? meta.site,
     glider: meta.gliderType,
 
     airtime: stats.airtime,
@@ -85,7 +85,8 @@ export function buildFlightRecord(
     windSpeed: stats.wind?.speed,
     windFromDeg: stats.wind?.fromDeg,
 
-    note: "",
+    note: opts.note ?? "",
     xcontestPoints: stats.xcScore.points > 0 ? Math.round(stats.xcScore.points * 100) / 100 : undefined,
+    xcontestUrl: opts.xcontestUrl,
   };
 }
