@@ -3,6 +3,7 @@ import {
   formatClock,
   formatDate,
   formatDuration,
+  formatDurationHM,
   formatTzOffset,
   type UnitFormatter,
 } from "@paranalyzer/core";
@@ -47,9 +48,9 @@ export function SummaryPanel({ flight, fmt, dateFormat = "dmy" }: Props) {
 
         <div className="stat-grid">
           {stat("Airtime", formatDuration(stats.airtime, true))}
-          {stat("Time in thermal", formatDuration(stats.timeInThermal),
+          {stat("Time in thermal", formatDurationHM(stats.timeInThermal),
             stats.airtime > 0 ? `${Math.round((stats.timeInThermal / stats.airtime) * 100)}% of airtime` : undefined)}
-          {stat("Time ridge soaring", formatDuration(stats.timeInRidge),
+          {stat("Time in ridge soaring", formatDurationHM(stats.timeInRidge),
             stats.airtime > 0 ? `${Math.round((stats.timeInRidge / stats.airtime) * 100)}% of airtime` : undefined)}
           {stat("Max altitude", fmt.altitude(stats.maxAlt))}
           {stat("Max alt. gain", fmt.altitude(stats.maxAltGain))}

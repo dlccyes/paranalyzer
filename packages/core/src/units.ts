@@ -68,6 +68,14 @@ export function formatDuration(seconds: number, forceHours = false): string {
   return `${m}:${pad(sec)}`;
 }
 
+/** Format a duration given in seconds as H:MM (no seconds). */
+export function formatDurationHM(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  return `${h}:${m.toString().padStart(2, "0")}`;
+}
+
 /** Format an epoch-ms instant as HH:MM:SS at the given tz offset (minutes). */
 export function formatClock(epochMs: number, tzOffsetMinutes = 0): string {
   const d = new Date(epochMs + tzOffsetMinutes * 60_000);

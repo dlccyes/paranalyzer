@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import type { FlightRecord, FieldId, SortRule, ColumnConfig, FilterRule } from "../data/model";
 import { FIELD_LABELS } from "../data/model";
-import { makeFormatter, formatDuration, formatDate, formatClock, compassName, type UnitSystem } from "@paranalyzer/core";
+import { makeFormatter, formatDuration, formatDurationHM, formatDate, formatClock, compassName, type UnitSystem } from "@paranalyzer/core";
 import { Arrow } from "@paranalyzer/ui";
 
 const helper = createColumnHelper<FlightRecord>();
@@ -60,8 +60,8 @@ function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
     col("site", (r) => r.site ?? "—"),
     col("pilot", (r) => r.pilot ?? "—"),
     col("airtime", (r) => formatDuration(r.airtime, true), sumDuration("airtime", true)),
-    col("timeInThermal", (r) => formatDuration(r.timeInThermal), sumDuration("timeInThermal")),
-    col("timeInRidge", (r) => formatDuration(r.timeInRidge), sumDuration("timeInRidge")),
+    col("timeInThermal", (r) => formatDurationHM(r.timeInThermal), sumDuration("timeInThermal")),
+    col("timeInRidge", (r) => formatDurationHM(r.timeInRidge), sumDuration("timeInRidge")),
     col("maxAlt", (r) => fmt.altitude(r.maxAlt)),
     col("maxAltGain", (r) => fmt.altitude(r.maxAltGain)),
     col("maxClimb", (r) => fmt.vario(r.maxClimb)),
