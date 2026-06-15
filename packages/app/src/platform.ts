@@ -10,11 +10,15 @@ export interface TrackAdapter {
   clearAll(): Promise<void>;
 }
 
+export type DriveProgress =
+  | { stage: "authorizing" | "preparing" | "uploading" | "downloading" }
+  | { stage: "importing"; done: number; total: number };
+
 export interface DriveAdapter {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  backupNow(): Promise<void>;
-  restore(mode: "merge" | "replace"): Promise<{ imported: number; skipped: number }>;
+  backupNow(onProgress?: (p: DriveProgress) => void): Promise<void>;
+  restore(mode: "merge" | "replace", onProgress?: (p: DriveProgress) => void): Promise<{ imported: number; skipped: number }>;
   maybeAutoBackup(): Promise<void>;
 }
 

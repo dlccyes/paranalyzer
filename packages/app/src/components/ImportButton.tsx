@@ -9,7 +9,11 @@ interface PendingDuplicate {
   fileName: string;
 }
 
-export function ImportButton() {
+interface Props {
+  onImported?: () => void;
+}
+
+export function ImportButton({ onImported }: Props) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -32,16 +36,20 @@ export function ImportButton() {
         fileName: first.duplicate!.pendingRec.fileName ?? "Unknown",
       });
       if (successes.length === 1) {
+        onImported?.();
         navigate(`/flight/${successes[0].id}`);
       } else if (successes.length > 1) {
+        onImported?.();
         navigate("/");
       }
       return;
     }
 
     if (successes.length === 1) {
+      onImported?.();
       navigate(`/flight/${successes[0].id}`);
     } else if (successes.length > 1) {
+      onImported?.();
       navigate("/");
     }
   };
@@ -64,6 +72,7 @@ export function ImportButton() {
     if (choice !== "cancel") {
       try {
         const id = await commitDuplicate(pending.info, choice);
+        onImported?.();
         navigate(`/flight/${id}`);
       } catch (err) {
         setErrors((e) => [...e, err instanceof Error ? err.message : "Import failed"]);

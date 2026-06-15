@@ -10,9 +10,18 @@ import {
 } from "../data/db";
 import { recalcAll } from "../data/recalc";
 import { exportBackup, importBackup } from "../data/backup";
-import { connectDrive, disconnectDrive, backupToDrive, restoreFromDrive } from "../data/drive";
+import { connectDrive, disconnectDrive, backupToDrive, restoreFromDrive, type DriveProgress } from "../data/drive";
 import { getPlatform } from "../platform";
 import type { Settings } from "../data/model";
+
+function driveProgressLabel(p: DriveProgress): string {
+  if (p.stage === "authorizing") return "Authorizing…";
+  if (p.stage === "preparing") return "Preparing…";
+  if (p.stage === "uploading") return "Uploading…";
+  if (p.stage === "downloading") return "Downloading…";
+  if (p.stage === "importing") return `Importing… ${p.done}/${p.total}`;
+  return "Working…";
+}
 
 export function SettingsScreen() {
   const navigate = useNavigate();
@@ -20,6 +29,7 @@ export function SettingsScreen() {
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [recalcProgress, setRecalcProgress] = useState<string | null>(null);
+  const [driveProgress, setDriveProgress] = useState<DriveProgress | null>(null);
   const [newSiteName, setNewSiteName] = useState("");
   const [editingSiteIdx, setEditingSiteIdx] = useState<number | null>(null);
   const [editSiteValue, setEditSiteValue] = useState("");
@@ -329,9 +339,16 @@ export function SettingsScreen() {
               <button
                 className="btn"
                 disabled={busy}
-                onClick={() => run(backupToDrive, "Backup uploaded to Drive")}
+                onClick={() => run(async () => {
+                  await backupToDrive((p) => setDriveProgress(p));
+                  setDriveProgress(null);
+                }, "Backup uploaded to Drive")}
               >
-                Back up now
+                {driveProgress && driveProgress.stage !== "importing"
+                  ? driveProgressLabel(driveProgress)
+                  : driveProgress?.stage === "importing"
+                    ? `Preparing… ${driveProgress.done}/${driveProgress.total}`
+                    : "Back up now"}
               </button>
               <button
                 className="btn btn-ghost"
@@ -339,12 +356,17 @@ export function SettingsScreen() {
                 onClick={async () => {
                   const mode = confirm("Replace all local data with Drive backup?") ? "replace" : "merge";
                   await run(async () => {
-                    const { imported, skipped } = await restoreFromDrive(mode);
+                    const { imported, skipped } = await restoreFromDrive(mode, (p) => setDriveProgress(p));
+                    setDriveProgress(null);
                     toast(`Restored: ${imported} imported, ${skipped} skipped`);
                   }, "");
                 }}
               >
-                Import backup from Drive
+                {driveProgress
+                  ? driveProgress.stage === "importing"
+                    ? `Importing… ${driveProgress.done}/${driveProgress.total}`
+                    : driveProgressLabel(driveProgress)
+                  : "Import backup from Drive"}
               </button>
               <button
                 className="btn btn-ghost"

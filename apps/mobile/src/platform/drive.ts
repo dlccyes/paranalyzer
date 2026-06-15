@@ -1,5 +1,5 @@
 import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
-import type { DriveAdapter } from "@paranalyzer/app";
+import type { DriveAdapter, DriveProgress } from "@paranalyzer/app";
 import { createBackupJson, importBackup, getSettings, saveSettings } from "@paranalyzer/app";
 
 const BACKUP_FILE_NAME = "paranalyzer-backup.json";
@@ -68,9 +68,13 @@ export const mobileDrive: DriveAdapter = {
     await saveSettings(settings);
   },
 
-  backupNow: async () => {
+  backupNow: async (onProgress?: (p: DriveProgress) => void) => {
+    onProgress?.({ stage: "preparing" });
     const token = await getToken();
-    const json = await createBackupJson();
+    const json = await createBackupJson((done, total) =>
+      onProgress?.({ stage: "importing", done, total }),
+    );
+    onProgress?.({ stage: "uploading" });
     const existingId = await findBackupFile(token);
     await uploadToDrive(token, json, existingId);
     const settings = await getSettings();
@@ -78,7 +82,8 @@ export const mobileDrive: DriveAdapter = {
     await saveSettings(settings);
   },
 
-  restore: async (mode) => {
+  restore: async (mode, onProgress?: (p: DriveProgress) => void) => {
+    onProgress?.({ stage: "downloading" });
     const token = await getToken();
     const fileId = await findBackupFile(token);
     if (!fileId) throw new Error("No backup found in Google Drive");
@@ -87,7 +92,9 @@ export const mobileDrive: DriveAdapter = {
     });
     if (!res.ok) throw new Error(`Drive download failed: ${res.status}`);
     const json = await res.text();
-    return importBackup(json, mode);
+    return importBackup(json, mode, (done, total) =>
+      onProgress?.({ stage: "importing", done, total }),
+    );
   },
 
   maybeAutoBackup: async () => {

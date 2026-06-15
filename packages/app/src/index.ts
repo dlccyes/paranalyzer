@@ -4,6 +4,7 @@ export { AppRoot } from "./AppRoot";
 // Screens
 export { FlightsListScreen } from "./screens/FlightsListScreen";
 export { FlightDetailScreen } from "./screens/FlightDetailScreen";
+export { ManualFlightScreen } from "./screens/ManualFlightScreen";
 export { SettingsScreen } from "./screens/SettingsScreen";
 
 // Components
@@ -22,6 +23,7 @@ export type {
   StorageAdapter,
   TrackAdapter,
   DriveAdapter,
+  DriveProgress,
   PlatformAdapter,
 } from "./platform";
 
@@ -67,6 +69,17 @@ export {
   restoreFromDrive,
   maybeAutoBackup,
 } from "./data/drive";
+
+// Data — filter
+export { makeFilterFn, applyFilters } from "./data/filter";
+
+// Data — breakdown
+export { siteBreakdown } from "./data/breakdown";
+export type { SiteMetric, SiteSegment } from "./data/breakdown";
+
+// Data — manual flight
+export { addManualFlight, updateManualFlight } from "./data/manualFlight";
+export type { ManualFlightInput, ManualFlightResult } from "./data/manualFlight";
 
 // Data — import
 export { importFlights, commitDuplicate } from "./data/importFlight";

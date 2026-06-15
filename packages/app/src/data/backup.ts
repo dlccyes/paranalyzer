@@ -13,16 +13,19 @@ export interface BackupBundle {
   flights: Array<FlightRecord & { track: { ext: string; text: string } }>;
 }
 
-export async function createBackupJson(): Promise<string> {
+export async function createBackupJson(
+  onProgress?: (done: number, total: number) => void,
+): Promise<string> {
   const doc = await loadDb();
-  const flights = await Promise.all(
-    doc.flights.map(async (rec) => {
-      const ext = rec.trackRef.split(".").pop() ?? "igc";
-      let text = "";
-      try { text = await readTrack(rec.trackRef); } catch { /* skip */ }
-      return { ...rec, track: { ext, text } };
-    }),
-  );
+  const flights: Array<FlightRecord & { track: { ext: string; text: string } }> = [];
+  for (let i = 0; i < doc.flights.length; i++) {
+    const rec = doc.flights[i];
+    const ext = rec.trackRef.split(".").pop() ?? "igc";
+    let text = "";
+    try { text = await readTrack(rec.trackRef); } catch { /* skip */ }
+    flights.push({ ...rec, track: { ext, text } });
+    onProgress?.(i + 1, doc.flights.length);
+  }
 
   const bundle = {
     format: "paranalyzer-backup" as const,
@@ -43,7 +46,11 @@ export async function exportBackup(): Promise<void> {
   await getPlatform().saveBackupFile(`paranalyzer-backup-${tag}.json`, json);
 }
 
-export async function importBackup(json: string, mode: "merge" | "replace"): Promise<{ imported: number; skipped: number }> {
+export async function importBackup(
+  json: string,
+  mode: "merge" | "replace",
+  onProgress?: (done: number, total: number) => void,
+): Promise<{ imported: number; skipped: number }> {
   const bundle = JSON.parse(json) as BackupBundle;
   if (bundle.format !== "paranalyzer-backup") throw new Error("Not a Paranalyzer backup file");
 
@@ -56,12 +63,19 @@ export async function importBackup(json: string, mode: "merge" | "replace"): Pro
   const existingIds = new Set(doc.flights.map((f) => f.id));
   let imported = 0;
   let skipped = 0;
+  const total = bundle.flights.length;
 
-  for (const { track, ...rec } of bundle.flights) {
-    if (mode === "merge" && existingIds.has(rec.id)) { skipped++; continue; }
-    const trackRef = await saveTrack(rec.id, track.ext, track.text);
-    await addFlight({ ...rec, trackRef });
+  for (let i = 0; i < bundle.flights.length; i++) {
+    const { track, ...rec } = bundle.flights[i];
+    if (mode === "merge" && existingIds.has(rec.id)) { skipped++; onProgress?.(i + 1, total); continue; }
+    if (rec.manual) {
+      await addFlight({ ...rec, trackRef: "" });
+    } else {
+      const trackRef = await saveTrack(rec.id, track.ext, track.text);
+      await addFlight({ ...rec, trackRef });
+    }
     imported++;
+    onProgress?.(i + 1, total);
   }
 
   if (bundle.settings) {

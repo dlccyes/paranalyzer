@@ -7,6 +7,15 @@ export const PHASE_COLORS = {
   ridge: "#34d399",
 } as const;
 
+/** Deterministic colour palette for site donuts (assigned by sorted site name index). */
+export const SITE_PALETTE = [
+  "#818cf8", "#f472b6", "#fb923c", "#a3e635",
+  "#22d3ee", "#e879f9", "#facc15", "#4ade80",
+  "#60a5fa", "#f87171", "#34d399", "#c084fc",
+] as const;
+
+export const SITE_OTHER_COLOR = "#6b7488";
+
 const VARIO_STOPS: { max: number; color: string }[] = [
   { max: -3, color: "#1e3a8a" },
   { max: -1.5, color: "#2563eb" },

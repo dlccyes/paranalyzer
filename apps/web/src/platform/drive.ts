@@ -1,4 +1,4 @@
-import type { DriveAdapter } from "@paranalyzer/app";
+import type { DriveAdapter, DriveProgress } from "@paranalyzer/app";
 import { createBackupJson, importBackup, getSettings, saveSettings } from "@paranalyzer/app";
 
 const BACKUP_FILE_NAME = "paranalyzer-backup.json";
@@ -170,9 +170,14 @@ export const webDrive: DriveAdapter = {
     await saveSettings(settings);
   },
 
-  backupNow: async () => {
+  backupNow: async (onProgress?: (p: DriveProgress) => void) => {
+    onProgress?.({ stage: "authorizing" });
     const token = await getToken();
-    const json = await createBackupJson();
+    onProgress?.({ stage: "preparing" });
+    const json = await createBackupJson((done, total) =>
+      onProgress?.({ stage: "importing", done, total }),
+    );
+    onProgress?.({ stage: "uploading" });
     const existingId = await findBackupFile(token);
     await uploadToDrive(token, json, existingId);
     const settings = await getSettings();
@@ -180,8 +185,10 @@ export const webDrive: DriveAdapter = {
     await saveSettings(settings);
   },
 
-  restore: async (mode) => {
+  restore: async (mode, onProgress?: (p: DriveProgress) => void) => {
+    onProgress?.({ stage: "authorizing" });
     const token = await getToken();
+    onProgress?.({ stage: "downloading" });
     const fileId = await findBackupFile(token);
     if (!fileId) throw new Error("No backup found in Google Drive");
     const res = await fetch(`${DRIVE_FILES_URL}/${fileId}?alt=media`, {
@@ -189,7 +196,9 @@ export const webDrive: DriveAdapter = {
     });
     if (!res.ok) throw new Error(`Drive download failed: ${res.status}`);
     const json = await res.text();
-    return importBackup(json, mode);
+    return importBackup(json, mode, (done, total) =>
+      onProgress?.({ stage: "importing", done, total }),
+    );
   },
 
   maybeAutoBackup: async () => {

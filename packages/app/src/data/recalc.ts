@@ -20,6 +20,10 @@ export async function recalcAll(onProgress?: (done: number, total: number) => vo
 
   for (let i = 0; i < flights.length; i++) {
     const rec = flights[i];
+    if (rec.manual) {
+      onProgress?.(i + 1, flights.length);
+      continue;
+    }
     try {
       const text = await readTrack(rec.trackRef);
       const parsed = parseTrack(rec.fileName ?? `flight.${rec.source}`, text);

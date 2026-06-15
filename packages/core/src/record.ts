@@ -5,10 +5,12 @@ export const ANALYSIS_VERSION = 3;
 export interface FlightRecord {
   id: string;
   importedAt: number;
-  source: "igc" | "gpx" | "kml";
+  source: "igc" | "gpx" | "kml" | "manual";
   fileName?: string;
   trackRef: string;
   analysisVersion: number;
+  /** True for records created without a track file. */
+  manual?: boolean;
 
   startTime: number;
   tzOffsetMinutes?: number;
