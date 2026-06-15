@@ -8,6 +8,8 @@ import { detectRidgeSoaring } from "./ridge";
 export interface AnalyzeOptions {
   /** Bridge ridge runs separated by less than this many seconds. */
   ridgeBridgeGapSec?: number;
+  /** Minimum number of turns for a climbing circling run to count as a thermal. */
+  thermalMinTurns?: number;
 }
 
 /** Run the full analysis pipeline on a parsed track. */
@@ -17,7 +19,8 @@ export function analyzeFlight(parsed: ParsedTrack, opts: AnalyzeOptions = {}): F
   const [start, end] = detectActiveRange(derived);
 
   // Pass 1: circling (thermals + bad turns)
-  const { thermals, badTurns, significantIntervals } = detectCircling(fixes, derived, start, end);
+  const { thermals, badTurns, significantIntervals } =
+    detectCircling(fixes, derived, start, end, opts.thermalMinTurns);
 
   // Pass 2: ridge soaring — excludes all circling intervals
   const ridgeSoars = detectRidgeSoaring(

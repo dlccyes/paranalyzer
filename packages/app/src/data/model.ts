@@ -1,4 +1,4 @@
-import type { FlightRecord } from "@paranalyzer/core";
+import type { AnalyzeOptions, FlightRecord } from "@paranalyzer/core";
 export type { FlightRecord };
 export { ANALYSIS_VERSION } from "@paranalyzer/core";
 
@@ -70,6 +70,10 @@ export interface Settings {
   units: "metric" | "imperial";
   dateFormat: "dmy" | "ymd";
   sites: string[];
+  /** Bridge ridge-soaring runs separated by less than this many seconds. */
+  ridgeBridgeGapSec: number;
+  /** Minimum number of turns for a climbing circle to count as a thermal. */
+  thermalMinTurns: number;
   lastBackupAt?: number;
   drive?: { connected: boolean };
 }
@@ -95,8 +99,8 @@ export const FIELD_LABELS: Record<FieldId, string> = {
   site: "Site",
   pilot: "Pilot",
   airtime: "Airtime",
-  timeInThermal: "Time thermal",
-  timeInRidge: "Time ridge",
+  timeInThermal: "Time in thermal",
+  timeInRidge: "Time in ridge soaring",
   maxAlt: "Max alt",
   maxAltGain: "Alt gain",
   maxClimb: "Max climb",
@@ -127,4 +131,14 @@ export const DEFAULT_SETTINGS: Settings = {
   units: "metric",
   dateFormat: "dmy",
   sites: [],
+  ridgeBridgeGapSec: 20,
+  thermalMinTurns: 1,
 };
+
+/** Map user settings onto the core analysis pipeline's tunable options. */
+export function analyzeOptions(settings: Settings): AnalyzeOptions {
+  return {
+    ridgeBridgeGapSec: settings.ridgeBridgeGapSec,
+    thermalMinTurns: settings.thermalMinTurns,
+  };
+}

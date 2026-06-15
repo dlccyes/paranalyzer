@@ -465,6 +465,41 @@ body,
   color: var(--clr-muted);
 }
 
+.settings-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-field-row label {
+  font-size: 14px;
+  color: var(--clr-text);
+}
+
+.settings-input-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-input-group input {
+  width: 72px;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: 6px;
+  color: var(--clr-text);
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  text-align: right;
+}
+
+.settings-input-unit {
+  font-size: 14px;
+  color: var(--clr-muted);
+}
+
 .unit-toggle {
   display: flex;
   border: 1px solid var(--clr-border);

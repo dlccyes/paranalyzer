@@ -135,6 +135,62 @@ export function SettingsScreen() {
         </section>
 
         <section className="settings-section">
+          <h3>Thermals</h3>
+          <div className="settings-field-row">
+            <label htmlFor="thermal-min-turns">Turn threshold</label>
+            <div className="settings-input-group">
+              <input
+                id="thermal-min-turns"
+                type="number"
+                min={0}
+                max={10}
+                step={0.5}
+                value={settings.thermalMinTurns}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (!Number.isFinite(n)) return;
+                  persist({ ...settings, thermalMinTurns: Math.min(10, Math.max(0, n)) });
+                }}
+              />
+              <span className="settings-input-unit">turns</span>
+            </div>
+          </div>
+          <p className="settings-note">
+            A climbing circle must complete at least this many full turns to count as a thermal.
+            Lower values catch brief climbs; higher values keep only well-formed thermals.
+            Recalculate flights below to apply to existing flights.
+          </p>
+        </section>
+
+        <section className="settings-section">
+          <h3>Ridge soaring</h3>
+          <div className="settings-field-row">
+            <label htmlFor="ridge-bridge-gap">Bridge gap</label>
+            <div className="settings-input-group">
+              <input
+                id="ridge-bridge-gap"
+                type="number"
+                min={0}
+                max={120}
+                step={1}
+                value={settings.ridgeBridgeGapSec}
+                onChange={(e) => {
+                  const n = Math.round(Number(e.target.value));
+                  if (!Number.isFinite(n)) return;
+                  persist({ ...settings, ridgeBridgeGapSec: Math.min(120, Math.max(0, n)) });
+                }}
+              />
+              <span className="settings-input-unit">s</span>
+            </div>
+          </div>
+          <p className="settings-note">
+            Consecutive ridge-soaring runs separated by a shorter gap are merged into one.
+            Larger values join runs split by brief turns; smaller values keep them apart.
+            Recalculate flights below to apply to existing flights.
+          </p>
+        </section>
+
+        <section className="settings-section">
           <h3>Sites</h3>
           <div className="sites-list">
             {settings.sites.length === 0 && (

@@ -5,4 +5,7 @@ export default defineConfig({
   base: "./",
   plugins: [react()],
   build: { outDir: "dist" },
+  // `igc-xc-score` pulls in the `collections` package, which references the
+  // Node `global`. Map it to `globalThis` so it runs in the browser.
+  define: { global: "globalThis" },
 });

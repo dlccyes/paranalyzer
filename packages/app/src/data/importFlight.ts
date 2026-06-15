@@ -1,9 +1,9 @@
 import { parseTrack, analyzeFlight, buildFlightRecord } from "@paranalyzer/core";
 import { addFlight, findFlightByStartTime, deleteFlight, listFlights } from "./db";
 import { saveTrack, deleteTrack } from "./trackStore";
-import { addSiteOption } from "./db";
+import { addSiteOption, getSettings } from "./db";
 import { getPlatform } from "../platform";
-import type { FlightRecord } from "./model";
+import { analyzeOptions, type FlightRecord } from "./model";
 
 function extOf(name: string): string {
   return name.split(".").pop()?.toLowerCase() ?? "igc";
@@ -41,7 +41,7 @@ async function importOne(name: string, text: string): Promise<ImportResult> {
   const ext = extOf(name);
   try {
     const parsed = parseTrack(name, text);
-    const flight = analyzeFlight(parsed);
+    const flight = analyzeFlight(parsed, analyzeOptions(await getSettings()));
     const rec = buildFlightRecord(parsed, flight, { id, trackRef: "" });
 
     if (rec.site) await addSiteOption(rec.site);

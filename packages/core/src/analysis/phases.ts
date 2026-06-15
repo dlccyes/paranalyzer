@@ -9,7 +9,8 @@ export const PARAMS = {
   circlingThresholdDegPerSec: 6,
   bridgeGapSec: 8,
   minSignificantTurns: 0.75,
-  wellFormedTurns: 3,
+  /** Minimum turns for a climbing circle to count as a thermal. Configurable. */
+  thermalMinTurns: 1,
   climbThresholdMs: 0.1,
   badTurnMinTurns: 1,
   minGlideSec: 20,
@@ -44,6 +45,7 @@ export function detectCircling(
   derived: Derived,
   startIdx: number,
   endIdx: number,
+  thermalMinTurns: number = PARAMS.thermalMinTurns,
 ): CirclingResult {
   const str = smoothTurnRate(derived, startIdx, endIdx);
   const runs = findCirclingRuns(derived, str, startIdx, endIdx);
@@ -55,7 +57,7 @@ export function detectCircling(
   for (const run of runs) {
     const c = buildCircling(fixes, derived, str, run);
     const climbing = c.climbRate > PARAMS.climbThresholdMs;
-    if (climbing && run.turns >= PARAMS.wellFormedTurns) {
+    if (climbing && run.turns >= thermalMinTurns) {
       thermals.push({ kind: "thermal", climb: c.altChange, ...c });
     } else if (!climbing && run.turns > PARAMS.badTurnMinTurns) {
       badTurns.push({ kind: "badturn", ...c });
@@ -108,8 +110,10 @@ export function detectPhases(
   derived: Derived,
   startIdx: number,
   endIdx: number,
+  thermalMinTurns: number = PARAMS.thermalMinTurns,
 ): PhaseResult {
-  const { thermals, badTurns, significantIntervals } = detectCircling(fixes, derived, startIdx, endIdx);
+  const { thermals, badTurns, significantIntervals } =
+    detectCircling(fixes, derived, startIdx, endIdx, thermalMinTurns);
   const glides = detectGlides(fixes, derived, startIdx, endIdx, significantIntervals, thermals);
 
   const phases: Phase[] = [...thermals, ...badTurns, ...glides].sort(
