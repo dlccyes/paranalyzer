@@ -4,6 +4,7 @@ import "@paranalyzer/app/shell.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App as CapApp } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import { initPlatform, AppRoot } from "@paranalyzer/app";
 import { mobileStorage } from "./platform/storage";
 import { mobileTracks } from "./platform/tracks";
@@ -17,6 +18,7 @@ initPlatform({
   saveBackupFile: mobileSaveBackupFile,
   pickBackupFile: mobilePickBackupFile,
   drive: mobileDrive,
+  openExternal: (url) => Browser.open({ url }),
 });
 
 CapApp.addListener("backButton", ({ canGoBack }) => {

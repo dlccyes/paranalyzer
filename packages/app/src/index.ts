@@ -37,6 +37,7 @@ export {
   updateNote,
   updateSite,
   updateXcontestPoints,
+  updateXcontestUrl,
   deleteFlight,
   getSettings,
   saveSettings,

@@ -566,6 +566,35 @@ body,
   width: 120px;
 }
 
+.detail-field-value {
+  font-size: 14px;
+  color: var(--clr-text);
+}
+
+.xc-url-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.xc-url-row .xpts-input {
+  flex: 1;
+  width: auto;
+}
+
+.xc-open-btn {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.xc-link {
+  color: var(--clr-accent);
+  text-decoration: none;
+}
+.xc-link:hover { text-decoration: underline; }
+
 .site-edit-input,
 .site-add-input {
   flex: 1;

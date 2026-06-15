@@ -7,13 +7,14 @@ import {
   getFlight,
   updateNote,
   updateSite,
-  updateXcontestPoints,
+  updateXcontestUrl,
   deleteFlight,
   getSettings,
 } from "../data/db";
 import { readTrack, deleteTrack } from "../data/trackStore";
 import { NoteEditor } from "../components/NoteEditor";
 import { SiteSelect } from "../components/SiteSelect";
+import { getPlatform } from "../platform";
 import type { FlightRecord } from "../data/model";
 import type { UnitSystem } from "@paranalyzer/core";
 
@@ -27,7 +28,7 @@ export function FlightDetailScreen() {
   const [units, setUnits] = useState<UnitSystem>("metric");
   const [dateFormat, setDateFormat] = useState<"dmy" | "ymd">("dmy");
   const [sites, setSites] = useState<string[]>([]);
-  const [xptsInput, setXptsInput] = useState("");
+  const [urlInput, setUrlInput] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -42,7 +43,7 @@ export function FlightDetailScreen() {
         const record = getFlight(id);
         if (!record) { setNotFound(true); return; }
         setRec(record);
-        setXptsInput(record.xcontestPoints != null ? String(record.xcontestPoints) : "");
+        setUrlInput(record.xcontestUrl ?? "");
         const text = await readTrack(record.trackRef);
         if (cancelled) return;
         const parsed = parseTrack(record.fileName ?? `flight.${record.source}`, text);
@@ -62,13 +63,13 @@ export function FlightDetailScreen() {
     setSites(updatedSites);
   };
 
-  const handleXptsBlur = async () => {
+  const handleUrlBlur = async () => {
     if (!rec) return;
-    const val = xptsInput.trim();
-    const pts = val === "" ? undefined : parseFloat(val);
-    if (pts !== undefined && isNaN(pts)) return;
-    await updateXcontestPoints(rec.id, pts);
-    setRec((r) => r ? { ...r, xcontestPoints: pts } : r);
+    const trimmed = urlInput.trim();
+    const url = trimmed === "" ? undefined : trimmed;
+    if (url && !url.startsWith("http")) return;
+    await updateXcontestUrl(rec.id, url);
+    setRec((r) => r ? { ...r, xcontestUrl: url } : r);
   };
 
   const handleDelete = async () => {
@@ -119,19 +120,34 @@ export function FlightDetailScreen() {
                 />
               </div>
               <div className="detail-field">
-                <label className="detail-field-label">XC pts</label>
-                <input
-                  className="xpts-input"
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  step="0.01"
-                  value={xptsInput}
-                  onChange={(e) => setXptsInput(e.target.value)}
-                  onBlur={handleXptsBlur}
-                  placeholder="—"
-                />
+                <label className="detail-field-label">XContest</label>
+                <div className="xc-url-row">
+                  <input
+                    className="xpts-input"
+                    type="url"
+                    inputMode="url"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    onBlur={handleUrlBlur}
+                    placeholder="https://…"
+                  />
+                  {rec.xcontestUrl && (
+                    <button
+                      className="btn btn-sm btn-ghost xc-open-btn"
+                      onClick={() => getPlatform().openExternal(rec.xcontestUrl!)}
+                      title="Open XContest flight"
+                    >
+                      ↗
+                    </button>
+                  )}
+                </div>
               </div>
+              {rec.xcontestPoints != null && (
+                <div className="detail-field">
+                  <label className="detail-field-label">XC pts</label>
+                  <span className="detail-field-value">{rec.xcontestPoints.toFixed(2)}</span>
+                </div>
+              )}
             </div>
             <NoteEditor
               value={rec.note}

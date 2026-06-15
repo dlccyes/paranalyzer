@@ -39,6 +39,7 @@ export interface FlightRecord {
 
   note: string;
   xcontestPoints?: number;
+  xcontestUrl?: string;
 }
 
 export function buildFlightRecord(

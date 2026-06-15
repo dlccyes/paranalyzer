@@ -1,5 +1,6 @@
 import type { BadTurn, Phase } from "@paranalyzer/core";
 import { formatClock, formatDuration, type UnitFormatter } from "@paranalyzer/core";
+import { useSortableRows } from "./useSortableRows";
 
 interface Props {
   badTurns: BadTurn[];
@@ -10,7 +11,19 @@ interface Props {
   onHover: (p: Phase | null) => void;
 }
 
+const COLUMNS = [
+  { key: "start", accessor: (t: BadTurn) => t.startTime },
+  { key: "dur", accessor: (t: BadTurn) => t.duration },
+  { key: "turns", accessor: (t: BadTurn) => t.turns },
+  { key: "alt", accessor: (t: BadTurn) => t.altChange },
+  { key: "rate", accessor: (t: BadTurn) => t.climbRate },
+  { key: "radius", accessor: (t: BadTurn) => t.avgRadius },
+];
+
 export function BadTurnsTable({ badTurns, fmt, tz, selected, onSelect, onHover }: Props) {
+  const { sorted, toggle, indicator } = useSortableRows(badTurns, COLUMNS);
+  const origIndex = new Map(badTurns.map((t, i) => [t, i + 1]));
+
   const signedAlt = (m: number) =>
     `${m >= 0 ? "+" : "−"}${fmt.altitude(Math.abs(m))}`;
 
@@ -27,19 +40,24 @@ export function BadTurnsTable({ badTurns, fmt, tz, selected, onSelect, onHover }
           <table>
             <thead>
               <tr>
-                <th>#</th><th>Start</th><th>Dur</th><th>Turns</th>
-                <th>Alt</th><th>Rate</th><th>Radius</th>
+                <th>#</th>
+                <th className="sortable" onClick={() => toggle("start")}>Start{indicator("start")}</th>
+                <th className="sortable" onClick={() => toggle("dur")}>Dur{indicator("dur")}</th>
+                <th className="sortable" onClick={() => toggle("turns")}>Turns{indicator("turns")}</th>
+                <th className="sortable" onClick={() => toggle("alt")}>Alt{indicator("alt")}</th>
+                <th className="sortable" onClick={() => toggle("rate")}>Rate{indicator("rate")}</th>
+                <th className="sortable" onClick={() => toggle("radius")}>Radius{indicator("radius")}</th>
               </tr>
             </thead>
             <tbody onMouseLeave={() => onHover(null)}>
-              {badTurns.map((t, i) => (
+              {sorted.map((t) => (
                 <tr
-                  key={i}
+                  key={origIndex.get(t)}
                   className={selected === t ? "row-selected" : ""}
                   onClick={() => onSelect(selected === t ? null : t)}
                   onMouseEnter={() => onHover(t)}
                 >
-                  <td className="dim">{i + 1}</td>
+                  <td className="dim">{origIndex.get(t)}</td>
                   <td>{formatClock(t.startTime, tz)}</td>
                   <td>{formatDuration(t.duration)}</td>
                   <td>

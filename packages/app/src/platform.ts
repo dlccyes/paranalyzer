@@ -25,6 +25,7 @@ export interface PlatformAdapter {
   saveBackupFile(name: string, json: string): Promise<void>;
   pickBackupFile(): Promise<string | null>;
   drive: DriveAdapter;
+  openExternal(url: string): Promise<void>;
   apkUrl?: string;
 }
 

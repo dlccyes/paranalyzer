@@ -2,6 +2,7 @@ import type { Glide, Phase, WindEstimate } from "@paranalyzer/core";
 import { angleDiff, compassName, formatClock, formatDuration, type UnitFormatter } from "@paranalyzer/core";
 import { WindBadge } from "./WindBadge";
 import { Arrow } from "./Arrow";
+import { useSortableRows } from "./useSortableRows";
 
 interface Props {
   glides: Glide[];
@@ -11,6 +12,19 @@ interface Props {
   onSelect: (p: Phase | null) => void;
   onHover: (p: Phase | null) => void;
 }
+
+const COLUMNS = [
+  { key: "start", accessor: (g: Glide) => g.startTime },
+  { key: "dur", accessor: (g: Glide) => g.duration },
+  { key: "course", accessor: (g: Glide) => g.course },
+  { key: "dist", accessor: (g: Glide) => g.trackDistance },
+  { key: "speed", accessor: (g: Glide) => g.groundSpeed },
+  { key: "sink", accessor: (g: Glide) => g.totalSink },
+  { key: "sinkrate", accessor: (g: Glide) => g.avgSinkRate },
+  { key: "glide", accessor: (g: Glide) => g.glideRatio ?? null },
+  { key: "wind", accessor: (g: Glide) => g.wind?.speed ?? null },
+  { key: "vswind", accessor: (g: Glide) => windAngle(g.course, g.wind) },
+];
 
 function windAngle(course: number, wind: WindEstimate | null): number | null {
   if (!wind) return null;
@@ -31,6 +45,9 @@ function sinkClass(sink: number): string {
 }
 
 export function GlidesTable({ glides, fmt, tz, selected, onSelect, onHover }: Props) {
+  const { sorted, toggle, indicator } = useSortableRows(glides, COLUMNS);
+  const origIndex = new Map(glides.map((g, i) => [g, i + 1]));
+
   return (
     <div className="card table-card wide">
       <div className="panel-title">
@@ -44,22 +61,34 @@ export function GlidesTable({ glides, fmt, tz, selected, onSelect, onHover }: Pr
           <table>
             <thead>
               <tr>
-                <th>#</th><th>Start</th><th>Dur</th><th>Course</th><th>Dist</th>
-                <th>Speed</th><th>Sink</th><th>Sink rate</th><th>Glide</th>
-                <th>Wind</th><th title="Angle between course and wind (0° = tailwind)">vs wind</th>
+                <th>#</th>
+                <th className="sortable" onClick={() => toggle("start")}>Start{indicator("start")}</th>
+                <th className="sortable" onClick={() => toggle("dur")}>Dur{indicator("dur")}</th>
+                <th className="sortable" onClick={() => toggle("course")}>Course{indicator("course")}</th>
+                <th className="sortable" onClick={() => toggle("dist")}>Dist{indicator("dist")}</th>
+                <th className="sortable" onClick={() => toggle("speed")}>Speed{indicator("speed")}</th>
+                <th className="sortable" onClick={() => toggle("sink")}>Sink{indicator("sink")}</th>
+                <th className="sortable" onClick={() => toggle("sinkrate")}>Sink rate{indicator("sinkrate")}</th>
+                <th className="sortable" onClick={() => toggle("glide")}>Glide{indicator("glide")}</th>
+                <th className="sortable" onClick={() => toggle("wind")}>Wind{indicator("wind")}</th>
+                <th
+                  className="sortable"
+                  title="Angle between course and wind (0° = tailwind)"
+                  onClick={() => toggle("vswind")}
+                >vs wind{indicator("vswind")}</th>
               </tr>
             </thead>
             <tbody onMouseLeave={() => onHover(null)}>
-              {glides.map((g, i) => {
+              {sorted.map((g) => {
                 const angle = windAngle(g.course, g.wind);
                 return (
                   <tr
-                    key={i}
+                    key={origIndex.get(g)}
                     className={selected === g ? "row-selected" : ""}
                     onClick={() => onSelect(selected === g ? null : g)}
                     onMouseEnter={() => onHover(g)}
                   >
-                    <td className="dim">{i + 1}</td>
+                    <td className="dim">{origIndex.get(g)}</td>
                     <td>{formatClock(g.startTime, tz)}</td>
                     <td>{formatDuration(g.duration)}</td>
                     <td>

@@ -284,6 +284,11 @@ thead th {
   border-bottom: 1px solid var(--border-soft);
   white-space: nowrap;
 }
+thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+thead th.sortable:hover { color: var(--text); }
 tbody td {
   padding: 9px 7px;
   border-bottom: 1px solid var(--border-soft);

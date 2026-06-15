@@ -10,7 +10,7 @@ export type FieldId =
   | "maxAlt" | "maxAltGain" | "maxClimb" | "maxSink"
   | "trackLength" | "straightDistance" | "freeDistance" | "avgSpeed"
   | "thermalCount" | "glideCount" | "ridgeCount"
-  | "windSpeed" | "windFromDeg" | "note" | "xcontestPoints";
+  | "windSpeed" | "windFromDeg" | "note" | "xcontestPoints" | "xcontestUrl";
 
 export type FilterFieldType =
   | "text" | "date" | "duration" | "altitude" | "distance"
@@ -39,6 +39,7 @@ export const FIELD_TYPES: Record<FieldId, FilterFieldType> = {
   windFromDeg: "deg",
   note: "text",
   xcontestPoints: "count",
+  xcontestUrl: "text",
 };
 
 export interface ColumnConfig {
@@ -85,7 +86,7 @@ export const ALL_FIELDS: FieldId[] = [
   "maxAlt", "maxAltGain", "maxClimb", "maxSink",
   "trackLength", "straightDistance", "freeDistance", "avgSpeed",
   "thermalCount", "glideCount", "ridgeCount",
-  "windSpeed", "windFromDeg", "xcontestPoints", "note",
+  "windSpeed", "windFromDeg", "xcontestPoints", "xcontestUrl", "note",
 ];
 
 export const FIELD_LABELS: Record<FieldId, string> = {
@@ -111,6 +112,7 @@ export const FIELD_LABELS: Record<FieldId, string> = {
   windFromDeg: "Wind dir",
   note: "Note",
   xcontestPoints: "XC points",
+  xcontestUrl: "XC link",
 };
 
 const DEFAULT_VISIBLE: FieldId[] = [

@@ -90,6 +90,27 @@ function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
         return total ? String(Math.round(total * 100) / 100) : "";
       },
     ),
+    col("xcontestUrl", (r) => {
+      if (!r.xcontestUrl) return "—";
+      let label: string;
+      try {
+        const u = new URL(r.xcontestUrl);
+        label = u.pathname.replace(/\/$/, "").split("/").pop() || u.hostname;
+      } catch {
+        label = r.xcontestUrl;
+      }
+      return (
+        <a
+          className="xc-link"
+          href={r.xcontestUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {label}
+        </a>
+      );
+    }),
     col("note", (r) => r.note || ""),
   ];
 }

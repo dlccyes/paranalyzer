@@ -77,6 +77,10 @@ export async function updateXcontestPoints(id: string, points: number | undefine
   return updateFlight(id, { xcontestPoints: points });
 }
 
+export async function updateXcontestUrl(id: string, url: string | undefined): Promise<void> {
+  return updateFlight(id, { xcontestUrl: url });
+}
+
 export async function deleteFlight(id: string): Promise<void> {
   const doc = await loadDb();
   doc.flights = doc.flights.filter((f) => f.id !== id);

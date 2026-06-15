@@ -20,6 +20,7 @@ initPlatform({
   saveBackupFile: webSaveBackupFile,
   pickBackupFile: webPickBackupFile,
   drive: webDrive,
+  openExternal: (url) => { window.open(url, "_blank", "noopener,noreferrer"); return Promise.resolve(); },
   apkUrl: APK_URL,
 });
 
