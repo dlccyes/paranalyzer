@@ -19,7 +19,16 @@ function patchJava() {
   }
 
   if (source.includes("private String requestedTokenScope = \"oauth2:profile email\";")) {
-    return false;
+    source = source
+      .replace(
+        "    GoogleSignInOptions.Builder googleSignInBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)\n      .requestIdToken(clientId)\n      .requestEmail();\n\n    if (forceCodeForRefreshToken) {\n      googleSignInBuilder.requestServerAuthCode(clientId, true);\n    }\n",
+        "    GoogleSignInOptions.Builder googleSignInBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)\n      .requestEmail();\n\n    if (forceCodeForRefreshToken) {\n      googleSignInBuilder.requestIdToken(clientId);\n      googleSignInBuilder.requestServerAuthCode(clientId, true);\n    }\n",
+      );
+    if (source.includes(".requestIdToken(clientId)\n      .requestEmail()")) {
+      throw new Error("Could not patch @codetrix-studio/capacitor-google-auth server client handling");
+    }
+    writeFileSync(javaPath, source);
+    return true;
   }
 
   const patched = source
@@ -30,6 +39,10 @@ function patchJava() {
     .replace(
       "    loadSignInClient(clientId, forceCodeForRefreshToken, scopeArray);\n",
       "    requestedTokenScope = \"oauth2:\" + String.join(\" \", scopeArray);\n    loadSignInClient(clientId, forceCodeForRefreshToken, scopeArray);\n",
+    )
+    .replace(
+      "    GoogleSignInOptions.Builder googleSignInBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)\n      .requestIdToken(clientId)\n      .requestEmail();\n\n    if (forceCodeForRefreshToken) {\n      googleSignInBuilder.requestServerAuthCode(clientId, true);\n    }\n",
+      "    GoogleSignInOptions.Builder googleSignInBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)\n      .requestEmail();\n\n    if (forceCodeForRefreshToken) {\n      googleSignInBuilder.requestIdToken(clientId);\n      googleSignInBuilder.requestServerAuthCode(clientId, true);\n    }\n",
     )
     .replace(
       '    AccountManagerFuture<Bundle> future = manager.getAuthToken(account, "oauth2:profile email", null, false, null, null);\n',

@@ -40,6 +40,24 @@ npm run build      # static bundle in dist/
 npm run preview    # serve the production build
 ```
 
+## Google Drive OAuth
+
+Google Drive backup uses the app-private Drive `appDataFolder` scope.
+
+Create two OAuth clients in the `paranalyzer` Google Cloud project:
+
+- **Android** client for package `net.approximator.paranalyzer` and the app
+  signing SHA-1.
+- **Web application** client for the deployed web origin, plus local dev origins
+  as needed.
+
+Use the Android client ID in `apps/mobile/capacitor.config.ts` as
+`androidClientId`.
+
+Use the Web client ID as `VITE_GOOGLE_CLIENT_ID` when building the web app. The
+checked-in web build defaults to the Paranalyzer Web client ID, but the env var
+can override it for another project.
+
 The build is fully static — host `dist/` anywhere (GitHub Pages, Netlify, an S3
 bucket, or just open it). `vite.config.ts` uses a relative `base` so it works
 from any subpath.

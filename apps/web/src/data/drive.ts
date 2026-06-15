@@ -5,7 +5,9 @@ const BACKUP_FILE_NAME = "paranalyzer-backup.json";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 const DRIVE_FILES_URL = "https://www.googleapis.com/drive/v3/files";
 const DRIVE_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
-const GOOGLE_CLIENT_ID = "793792702856-8p3th1ignl975cl0132obqcfko3lgfrs.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ??
+  "793792702856-2pkgc4a54n4or7ijcb1vm3rld3un35r5.apps.googleusercontent.com";
 const GIS_SCRIPT_URL = "https://accounts.google.com/gsi/client";
 const TOKEN_KEY = "paranalyzer.googleDriveToken";
 
@@ -88,6 +90,10 @@ function loadGoogleIdentity(): Promise<void> {
 }
 
 async function getToken(prompt = "consent"): Promise<string> {
+  if (!GOOGLE_CLIENT_ID) {
+    throw new Error("Google Drive is not configured. Set VITE_GOOGLE_CLIENT_ID to a Web OAuth client ID.");
+  }
+
   const stored = readStoredToken();
   if (stored) return stored.accessToken;
 

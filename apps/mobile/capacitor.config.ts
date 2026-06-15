@@ -11,7 +11,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 //   Enable the Google Drive API in the Google Cloud project.
 //   Configure the OAuth consent screen with the drive.appdata scope.
 //   Create an Android OAuth client for appId + signing-key SHA-1.
-//   Set androidClientId below to a Web OAuth client ID used by Google Sign-In.
+//   Set androidClientId below to that Android OAuth client ID.
 
 const config: CapacitorConfig = {
   appId: "net.approximator.paranalyzer",
@@ -23,9 +23,8 @@ const config: CapacitorConfig = {
   plugins: {
     GoogleAuth: {
       scopes: ["profile", "email", "https://www.googleapis.com/auth/drive.appdata"],
-      // Replace with your Web OAuth client ID from Google Cloud Console:
       androidClientId: "793792702856-8p3th1ignl975cl0132obqcfko3lgfrs.apps.googleusercontent.com",
-      forceCodeForRefreshToken: true,
+      forceCodeForRefreshToken: false,
     },
   },
 };
