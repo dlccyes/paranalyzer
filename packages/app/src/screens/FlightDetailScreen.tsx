@@ -12,10 +12,9 @@ import {
   getSettings,
 } from "../data/db";
 import { readTrack, deleteTrack } from "../data/trackStore";
-import { NoteEditor } from "../components/NoteEditor";
 import { SiteSelect } from "../components/SiteSelect";
 import { getPlatform } from "../platform";
-import type { FlightRecord } from "../data/model";
+import { analyzeOptions, type FlightRecord } from "../data/model";
 import type { UnitSystem } from "@paranalyzer/core";
 
 export function FlightDetailScreen() {
@@ -29,6 +28,8 @@ export function FlightDetailScreen() {
   const [dateFormat, setDateFormat] = useState<"dmy" | "ymd">("dmy");
   const [sites, setSites] = useState<string[]>([]);
   const [urlInput, setUrlInput] = useState("");
+  const [noteDraft, setNoteDraft] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -44,10 +45,11 @@ export function FlightDetailScreen() {
         if (!record) { setNotFound(true); return; }
         setRec(record);
         setUrlInput(record.xcontestUrl ?? "");
+        setNoteDraft(record.note ?? "");
         const text = await readTrack(record.trackRef);
         if (cancelled) return;
         const parsed = parseTrack(record.fileName ?? `flight.${record.source}`, text);
-        const analysed = analyzeFlight(parsed);
+        const analysed = analyzeFlight(parsed, analyzeOptions(cfg));
         if (!cancelled) setFlight(analysed);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load flight");
@@ -103,51 +105,69 @@ export function FlightDetailScreen() {
         {error && <div className="error-banner">{error}</div>}
         {!flight && !error && <div className="loading">Analyzing…</div>}
         {rec && (
-          <>
-            <div className="detail-fields">
-              <div className="detail-field">
-                <label className="detail-field-label">Site</label>
-                <SiteSelect
-                  value={rec.site ?? ""}
-                  sites={sites}
-                  onSiteChange={handleSiteChange}
-                />
-              </div>
-              <div className="detail-field">
-                <label className="detail-field-label">XContest</label>
-                <div className="xc-url-row">
-                  <input
-                    className="xpts-input"
-                    type="url"
-                    inputMode="url"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    onBlur={handleUrlBlur}
-                    placeholder="https://…"
-                  />
-                  {rec.xcontestUrl && (
-                    <button
-                      className="btn btn-sm btn-ghost xc-open-btn"
-                      onClick={() => getPlatform().openExternal(rec.xcontestUrl!)}
-                      title="Open XContest flight"
-                    >
-                      ↗
-                    </button>
-                  )}
-                </div>
-              </div>
-              {rec.xcontestPoints != null && (
-                <div className="detail-field">
-                  <label className="detail-field-label">XC pts</label>
-                  <span className="detail-field-value">{rec.xcontestPoints.toFixed(2)}</span>
-                </div>
-              )}
+          <div className="detail-fields">
+            <div className="detail-field">
+              <label className="detail-field-label">Site</label>
+              <SiteSelect
+                value={rec.site ?? ""}
+                sites={sites}
+                onSiteChange={handleSiteChange}
+              />
             </div>
-            <NoteEditor
-              value={rec.note}
-              onSave={(text) => updateNote(rec.id, text)}
-            />
-          </>
+            {rec.xcontestPoints != null && (
+              <div className="detail-field">
+                <label className="detail-field-label">XC pts</label>
+                <span className="detail-field-value">{rec.xcontestPoints.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="detail-field">
+              <label className="detail-field-label">XContest link</label>
+              <div className="xc-url-row">
+                <input
+                  className="xpts-input"
+                  type="url"
+                  inputMode="url"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onBlur={handleUrlBlur}
+                  placeholder="https://…"
+                />
+                {rec.xcontestUrl && (
+                  <button
+                    className="btn btn-sm btn-ghost xc-open-btn"
+                    onClick={() => getPlatform().openExternal(rec.xcontestUrl!)}
+                    title="Open XContest flight"
+                  >
+                    ↗
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="detail-field">
+              <label className="detail-field-label">Note</label>
+              <div className="note-inline">
+                <textarea
+                  className="note-textarea"
+                  value={noteDraft}
+                  onChange={(e) => setNoteDraft(e.target.value)}
+                  placeholder="Add a note about this flight…"
+                  rows={3}
+                />
+                {noteDraft !== (rec.note ?? "") && (
+                  <button
+                    className="btn btn-sm"
+                    disabled={noteSaving}
+                    onClick={async () => {
+                      setNoteSaving(true);
+                      try { await updateNote(rec.id, noteDraft); } finally { setNoteSaving(false); }
+                    }}
+                  >
+                    {noteSaving ? "Saving…" : "Save"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         )}
         {flight && rec && (
           <AnalysisView
