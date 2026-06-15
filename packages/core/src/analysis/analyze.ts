@@ -4,8 +4,14 @@ import { detectCircling, detectGlides } from "./phases";
 import { computeStats, detectActiveRange } from "./stats";
 import { detectRidgeSoaring } from "./ridge";
 
+/** Tunable knobs for the analysis pipeline. */
+export interface AnalyzeOptions {
+  /** Bridge ridge runs separated by less than this many seconds. */
+  ridgeBridgeGapSec?: number;
+}
+
 /** Run the full analysis pipeline on a parsed track. */
-export function analyzeFlight(parsed: ParsedTrack): Flight {
+export function analyzeFlight(parsed: ParsedTrack, opts: AnalyzeOptions = {}): Flight {
   const { fixes, meta } = parsed;
   const derived = computeDerived(fixes);
   const [start, end] = detectActiveRange(derived);
@@ -14,7 +20,9 @@ export function analyzeFlight(parsed: ParsedTrack): Flight {
   const { thermals, badTurns, significantIntervals } = detectCircling(fixes, derived, start, end);
 
   // Pass 2: ridge soaring — excludes all circling intervals
-  const ridgeSoars = detectRidgeSoaring(fixes, derived, start, end, significantIntervals);
+  const ridgeSoars = detectRidgeSoaring(
+    fixes, derived, start, end, significantIntervals, opts.ridgeBridgeGapSec,
+  );
   const ridgeIntervals: [number, number][] = ridgeSoars.map((r) => [r.startIdx, r.endIdx]);
 
   // Pass 3: glides — fill gaps not claimed by circling or ridge

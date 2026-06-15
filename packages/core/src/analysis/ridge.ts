@@ -13,8 +13,8 @@ export const RIDGE_PARAMS = {
   minGroundSpeedMs: 3,
   /** A ridge run must last at least this long (s). */
   minDurationSec: 60,
-  /** Bridge ridge runs separated by less than this (s). */
-  bridgeGapSec: 10,
+  /** Bridge ridge runs separated by less than this (s). Configurable. */
+  bridgeGapSec: 20,
 };
 
 /**
@@ -38,6 +38,7 @@ export function detectRidgeSoaring(
   startIdx: number,
   endIdx: number,
   circlingIntervals: [number, number][],
+  bridgeGapSec: number = RIDGE_PARAMS.bridgeGapSec,
 ): RidgeSoar[] {
   const p = RIDGE_PARAMS;
   const thr = CIRCLING_PARAMS.circlingThresholdDegPerSec;
@@ -86,7 +87,7 @@ export function detectRidgeSoaring(
   const merged: { a: number; b: number }[] = [];
   for (const run of rawRuns) {
     const last = merged[merged.length - 1];
-    if (last && derived.t[run.a] - derived.t[last.b] < p.bridgeGapSec) {
+    if (last && derived.t[run.a] - derived.t[last.b] < bridgeGapSec) {
       last.b = run.b;
     } else {
       merged.push({ ...run });
