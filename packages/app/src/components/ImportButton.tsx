@@ -92,7 +92,7 @@ export function ImportButton({ onImported }: Props) {
 
   return (
     <div>
-      <button className="btn btn-primary" onClick={handleImport} disabled={busy}>
+      <button className="btn btn-sm btn-primary" onClick={handleImport} disabled={busy}>
         {busy ? "Importing…" : "+ Import"}
       </button>
       {errors.map((e, i) => (

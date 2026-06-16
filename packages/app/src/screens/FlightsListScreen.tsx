@@ -148,26 +148,26 @@ export function FlightsListScreen() {
         />
       )}
 
-      <details className="dashboard-panel list-dashboard card" open>
-        <summary>
-          <div className="panel-title">Dashboard</div>
-        </summary>
-        <div className="dashboard-charts">
-          <TimeBreakdownChart
-            breakdown={timeBreakdown}
-            activeKey={siteMetric !== "airtime" ? siteMetric : null}
-            onSegmentClick={selectSiteMetric}
-          />
-          <SiteBreakdownChart
-            data={siteData}
-            metric={siteMetric}
-            activeKey={activeSiteFilter ?? null}
-            onSegmentClick={toggleSiteFilter}
-          />
-        </div>
-      </details>
-
       <div className="list-body">
+        <details className="dashboard-panel list-dashboard card" open>
+          <summary>
+            <div className="panel-title">Dashboard</div>
+          </summary>
+          <div className="dashboard-charts">
+            <TimeBreakdownChart
+              breakdown={timeBreakdown}
+              activeKey={siteMetric !== "airtime" ? siteMetric : null}
+              onSegmentClick={selectSiteMetric}
+            />
+            <SiteBreakdownChart
+              data={siteData}
+              metric={siteMetric}
+              activeKey={activeSiteFilter ?? null}
+              onSegmentClick={toggleSiteFilter}
+            />
+          </div>
+        </details>
+
         <FlightsTable
           flights={filtered}
           sortRule={settings.sort}
