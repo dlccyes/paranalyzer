@@ -159,15 +159,8 @@ export function FlightMap({ flight, highlight, zoomTo, hoverIdx, mapBase = "stre
   );
 }
 
-function SegmentPair({ positions, color, satellite }: { positions: [number, number][]; color: string; satellite: boolean }) {
-  return (
-    <>
-      {satellite && (
-        <Polyline positions={positions} pathOptions={{ color: "#0b0d12", weight: 6, opacity: 0.55 }} />
-      )}
-      <Polyline positions={positions} pathOptions={{ color, weight: 3, opacity: 0.9 }} />
-    </>
-  );
+function SegmentPair({ positions, color }: { positions: [number, number][]; color: string; satellite: boolean }) {
+  return <Polyline positions={positions} pathOptions={{ color, weight: 3, opacity: 0.9 }} />;
 }
 
 function FitBounds({ bounds }: { bounds: L.LatLngBounds }) {
