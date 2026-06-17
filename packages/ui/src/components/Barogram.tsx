@@ -234,9 +234,10 @@ export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect, 
             const i = idxFromClientX(ev.clientX);
             if (i == null) return;
             const phase = phases.find((ph) => i >= ph.startIdx && i <= ph.endIdx);
-            if (phase) { onSelect(phase); return; }
+            if (phase) { onSelect(phase === active ? null : phase); return; }
             const ridge = ridgeSoars.find((r) => i >= r.startIdx && i <= r.endIdx);
-            onSelect(ridge ?? null);
+            const hit = ridge ?? null;
+            onSelect(hit === active ? null : hit);
           }}
         >
           {phases.map((p, i) => (
