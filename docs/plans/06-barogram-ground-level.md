@@ -15,14 +15,21 @@ GPS-altitude trace (`fixes[i].alt`) and fills a flat area down to the chart's
 - `flight.fixes[]` has `lat`, `lon`, `alt` (GPS/geometric, metres), `time`, and
   optional `pressureAlt`. **No terrain elevation anywhere** in the data model
   (`grep` for `elevation`/`terrain` is empty).
-- The app is **local-first / "entirely in your browser"** (see `index.html`
-  description). There are **no network calls today** except Google Drive backup.
-  Tracks + derived `FlightRecord`s live in IndexedDB (web) / filesystem
-  (Capacitor Android) behind the `PlatformAdapter`
-  ([`platform.ts`](../../packages/app/src/platform.ts)).
-- Map already uses Leaflet OSM tiles in
-  [`FlightMap.tsx`](../../packages/ui/src/components/FlightMap.tsx) — so tile
-  fetching infra and the "we fetch map data online" precedent already exist.
+- The app is **local-first**: tracks + derived `FlightRecord`s live in IndexedDB
+  (web) / filesystem (Capacitor Android) behind the `PlatformAdapter`
+  ([`platform.ts`](../../packages/app/src/platform.ts)), and all analysis runs
+  client-side.
+- **But it already fetches third-party, location-derived data over the network.**
+  [`FlightMap.tsx`](../../packages/ui/src/components/FlightMap.tsx) loads map
+  tiles from **OpenStreetMap** (`tile.openstreetmap.org`, street) and **Esri /
+  ArcGIS** (`server.arcgisonline.com`, satellite). Those tile requests already
+  reveal where you flew. So an elevation API is **the same class of request the
+  app already makes** — not a new privacy boundary — and the tile-fetching
+  precedent/infra exists.
+- The one genuine difference: the **barogram currently renders fully offline**
+  (no fetch), whereas the map does not. Adding an elevation fetch gives the
+  barogram a first-load network dependency — an *offline/UX* consideration
+  (solved by caching), not a privacy one.
 
 ## The crux: where does terrain elevation come from?
 
@@ -31,7 +38,7 @@ families, with the trade-off being **network/offline/privacy vs. effort**:
 
 | Option | How | Pros | Cons |
 |--------|-----|------|------|
-| **A. Elevation API (batch point query)** | POST/GET lat-lon list to a hosted DEM service | Trivial; tiny code; good resolution | Needs network; sends coordinates to a 3rd party; rate limits |
+| **A. Elevation API (batch point query)** | POST/GET lat-lon list to a hosted DEM service | Trivial; tiny code; good resolution; same network/3rd-party class as the existing map tiles | Needs network on first load; rate limits |
 | **B. Terrain-RGB raster tiles** | Fetch DEM tiles (AWS Terrarium / Mapbox Terrain-RGB), decode elevation from pixel RGB, sample | Reuses tile/caching mental model from the map; can be cached offline per region | More code (PNG decode, tile math); still a fetch |
 | **C. Bundled / on-demand DEM** | Ship or download SRTM `.hgt` tiles | Fully offline + private | A single SRTM1 1°×1° tile ≈ 25 MB — impractical to bundle globally |
 
@@ -46,9 +53,10 @@ families, with the trade-off being **network/offline/privacy vs. effort**:
 ### Recommendation
 
 **Phase 1 = Option A (Open-Meteo), fetched once and cached on the flight.** It is
-the smallest change that ships the feature, and caching makes it private-ish and
-offline after first load. Keep **Option B as a Phase 2** upgrade for users who
-want fully offline terrain (reuse Leaflet's tile cache, no per-coordinate API).
+the smallest change that ships the feature, it's consistent with the map's
+existing third-party tile fetches, and caching keeps the barogram offline-capable
+after first load. Keep **Option B as a Phase 2** upgrade for users who want fully
+offline terrain (reuse Leaflet's tile cache, no per-coordinate API).
 
 ## Datum caveat (call out in UI/docs)
 
@@ -110,10 +118,9 @@ fetchElevations?(points: { lat: number; lon: number }[]): Promise<number[]>;
 ### 4. Settings (optional, minimal)
 
 - A "Show ground level" toggle (default **on**) in `SettingsScreen`, following the
-  existing settings + `analyzeOptions`/recalc pattern.
-- A short **privacy note**: enabling terrain sends downsampled track coordinates
-  to the elevation provider. (Consider defaulting **off** until first enabled if
-  we want to be strict about the local-first promise.)
+  existing settings + `analyzeOptions`/recalc pattern. Mostly a display
+  preference; no special privacy gating needed since the app already fetches
+  map tiles from third parties.
 
 ## Verification
 
@@ -126,11 +133,10 @@ fetchElevations?(points: { lat: number; lon: number }[]): Promise<number[]>;
 
 ## Risks / open questions
 
-- **Privacy vs. local-first:** sending coordinates to a 3rd-party API is the one
-  real tension. Mitigations: cache so it's one-shot, make it a toggle, allow a
-  self-hosted endpoint (OpenTopoData) later.
-- **Offline mobile:** first fetch needs connectivity; cached thereafter. Phase 2
-  (tiles) improves this.
+- **Offline first-load:** unlike today's barogram, the terrain needs one network
+  fetch before it can render; cached thereafter. (Privacy is *not* a new concern —
+  the map already fetches OSM/Esri tiles that reveal flight location.) Phase 2
+  (tiles) improves the offline story further.
 - **Datum offset** (above) — decide raw vs. takeoff-anchored on the sample.
 - **API limits/reliability** (Open-Meteo ~10k req/day free) — chunking + caching
   keeps us well under; degrade gracefully on failure.
