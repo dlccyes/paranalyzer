@@ -348,6 +348,32 @@ body {
 }
 .legend-unit { color: var(--muted); }
 
+.map-layer-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 500;
+  display: flex;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(14, 16, 22, 0.84);
+}
+.map-layer-toggle button {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: rgba(232, 234, 240, 0.65);
+  cursor: pointer;
+  line-height: 1;
+}
+.map-layer-toggle button.active {
+  background: rgba(91, 140, 255, 0.85);
+  color: #fff;
+}
+
 /* ---------- barogram ---------- */
 .barogram-plot {
   position: relative;

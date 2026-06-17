@@ -19,6 +19,8 @@ export interface AnalysisViewProps {
   thermalBridgeGapSec?: number;
   ridgeBridgeGapSec?: number;
   summarySlot?: ReactNode;
+  mapBase?: "street" | "satellite";
+  onMapBaseChange?: (base: "street" | "satellite") => void;
 }
 
 export function AnalysisView({
@@ -30,6 +32,8 @@ export function AnalysisView({
   thermalBridgeGapSec,
   ridgeBridgeGapSec,
   summarySlot,
+  mapBase,
+  onMapBaseChange,
 }: AnalysisViewProps) {
   const [unitsLocal, setUnitsLocal] = useState<UnitSystem>(
     () => (localStorage.getItem("paranalyzer.units") as UnitSystem) || "metric",
@@ -66,7 +70,7 @@ export function AnalysisView({
       </div>
       <SummaryPanel flight={flight} fmt={fmt} dateFormat={dateFormat}>{summarySlot}</SummaryPanel>
       <div ref={mapRef}>
-        <FlightMap flight={flight} highlight={activePhase} zoomTo={selected} hoverIdx={hoverIdx} />
+        <FlightMap flight={flight} highlight={activePhase} zoomTo={selected} hoverIdx={hoverIdx} mapBase={mapBase} onMapBaseChange={onMapBaseChange} />
       </div>
       <Barogram
         flight={flight}

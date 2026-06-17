@@ -10,12 +10,13 @@ import {
   updateXcontestUrl,
   deleteFlight,
   getSettings,
+  saveSettings,
 } from "../data/db";
 import { getPlatform } from "../platform";
 import { readTrack, deleteTrack } from "../data/trackStore";
 import { SiteSelect } from "../components/SiteSelect";
 import { analyzeWithSettings } from "../data/analyze";
-import { DEFAULT_SETTINGS, type FlightRecord } from "../data/model";
+import { DEFAULT_SETTINGS, type FlightRecord, type Settings } from "../data/model";
 import type { UnitSystem } from "@paranalyzer/core";
 
 export function FlightDetailScreen() {
@@ -36,6 +37,8 @@ export function FlightDetailScreen() {
   const [urlInput, setUrlInput] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
+  const [mapBase, setMapBase] = useState<Settings["mapBase"]>("street");
+  const [fullSettings, setFullSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -44,6 +47,7 @@ export function FlightDetailScreen() {
       try {
         const cfg = await getSettings();
         if (cancelled) return;
+        setFullSettings(cfg);
         setUnits(cfg.units);
         setDateFormat(cfg.dateFormat ?? "dmy");
         setAnalysisSettings({
@@ -52,6 +56,7 @@ export function FlightDetailScreen() {
           ridgeBridgeGapSec: cfg.ridgeBridgeGapSec,
         });
         setSites(cfg.sites);
+        setMapBase(cfg.mapBase ?? "street");
         const record = getFlight(id);
         if (!record) { setNotFound(true); return; }
         setRec(record);
@@ -84,6 +89,11 @@ export function FlightDetailScreen() {
     if (url && !url.startsWith("http")) return;
     await updateXcontestUrl(rec.id, url);
     setRec((r) => r ? { ...r, xcontestUrl: url } : r);
+  };
+
+  const handleMapBaseChange = async (base: Settings["mapBase"]) => {
+    setMapBase(base);
+    if (fullSettings) await saveSettings({ ...fullSettings, mapBase: base });
   };
 
   const handleDelete = async () => {
@@ -217,6 +227,8 @@ export function FlightDetailScreen() {
                 ridgeBridgeGapSec={analysisSettings.ridgeBridgeGapSec}
                 onUnitsChange={setUnits}
                 summarySlot={summarySlot}
+                mapBase={mapBase}
+                onMapBaseChange={handleMapBaseChange}
               />
             )}
           </>

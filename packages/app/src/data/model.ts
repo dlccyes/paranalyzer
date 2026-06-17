@@ -79,6 +79,7 @@ export interface Settings {
   thermalMinTurns: number;
   lastBackupAt?: number;
   drive?: { connected: boolean };
+  mapBase?: "street" | "satellite";
 }
 
 export interface DbDocument {

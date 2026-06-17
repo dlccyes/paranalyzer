@@ -11,14 +11,18 @@ import L from "leaflet";
 import type { AnyPhase, Flight } from "@paranalyzer/core";
 import { buildVarioSegments, PHASE_COLORS, VARIO_LEGEND } from "@paranalyzer/core";
 
+type MapBase = "street" | "satellite";
+
 interface Props {
   flight: Flight;
   highlight: AnyPhase | null;
   zoomTo: AnyPhase | null;
   hoverIdx: number | null;
+  mapBase?: MapBase;
+  onMapBaseChange?: (base: MapBase) => void;
 }
 
-export function FlightMap({ flight, highlight, zoomTo, hoverIdx }: Props) {
+export function FlightMap({ flight, highlight, zoomTo, hoverIdx, mapBase = "street", onMapBaseChange }: Props) {
   const segments = useMemo(() => buildVarioSegments(flight), [flight]);
   const [s, e] = flight.range;
   const launch = flight.fixes[s];
@@ -61,17 +65,29 @@ export function FlightMap({ flight, highlight, zoomTo, hoverIdx }: Props) {
         scrollWheelZoom
         className="leaflet-map"
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-        />
+        {mapBase === "satellite" ? (
+          <TileLayer
+            key="satellite"
+            attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
+            maxNativeZoom={17}
+          />
+        ) : (
+          <TileLayer
+            key="street"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
+          />
+        )}
 
         {segments.map((seg, i) => (
-          <Polyline
+          <SegmentPair
             key={i}
             positions={seg.positions}
-            pathOptions={{ color: seg.color, weight: 3, opacity: 0.9 }}
+            color={seg.color}
+            satellite={mapBase === "satellite"}
           />
         ))}
 
@@ -115,6 +131,22 @@ export function FlightMap({ flight, highlight, zoomTo, hoverIdx }: Props) {
         <FlyToSelection positions={zoomPositions} />
       </MapContainer>
 
+      {onMapBaseChange && (
+        <div className="map-layer-toggle">
+          <button
+            className={mapBase === "street" ? "active" : ""}
+            onClick={() => onMapBaseChange("street")}
+          >
+            Street
+          </button>
+          <button
+            className={mapBase === "satellite" ? "active" : ""}
+            onClick={() => onMapBaseChange("satellite")}
+          >
+            Satellite
+          </button>
+        </div>
+      )}
       <div className="vario-legend">
         {VARIO_LEGEND.map((l) => (
           <span key={l.label} className="legend-item">
@@ -124,6 +156,17 @@ export function FlightMap({ flight, highlight, zoomTo, hoverIdx }: Props) {
         <span className="legend-unit">m/s</span>
       </div>
     </div>
+  );
+}
+
+function SegmentPair({ positions, color, satellite }: { positions: [number, number][]; color: string; satellite: boolean }) {
+  return (
+    <>
+      {satellite && (
+        <Polyline positions={positions} pathOptions={{ color: "#0b0d12", weight: 6, opacity: 0.55 }} />
+      )}
+      <Polyline positions={positions} pathOptions={{ color, weight: 3, opacity: 0.9 }} />
+    </>
   );
 }
 

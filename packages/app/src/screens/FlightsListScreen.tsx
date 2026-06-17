@@ -18,6 +18,7 @@ export function FlightsListScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [showColumnSheet, setShowColumnSheet] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showOverflowMenu, setShowOverflowMenu] = useState(false);
   const [siteMetric, setSiteMetric] = useState<SiteMetric>("airtime");
 
   useEffect(() => {
@@ -119,21 +120,26 @@ export function FlightsListScreen() {
           <span className="app-brand-text">Paranalyzer</span>
         </span>
         <div className="header-actions">
-          <button className="btn btn-sm btn-ghost" onClick={() => setShowFilters((v) => !v)}>
+          {/* Secondary actions — hidden on narrow screens, shown via overflow menu */}
+          <button className="btn btn-sm btn-ghost header-btn-wide" onClick={() => setShowFilters((v) => !v)}>
             {showFilters ? "Hide filters" : "Filter"}
           </button>
-          <button className="btn btn-sm btn-ghost" onClick={() => setShowColumnSheet(true)}>
+          <button className="btn btn-sm btn-ghost header-btn-wide" onClick={() => setShowColumnSheet(true)}>
             Columns
           </button>
           <ImportButton onImported={async () => {
             const doc = await loadDb();
             setFlights([...doc.flights]);
           }} />
-          <button className="btn btn-sm btn-ghost" onClick={() => navigate("/flight/new")}>
+          <button className="btn btn-sm btn-ghost header-btn-wide" onClick={() => navigate("/flight/new")}>
             + Manual
           </button>
-          <button className="btn btn-sm btn-ghost" onClick={() => navigate("/settings")}>
+          <button className="btn btn-sm btn-ghost header-btn-wide" onClick={() => navigate("/settings")}>
             ⚙️
+          </button>
+          {/* Overflow button — only visible on narrow screens */}
+          <button className="btn btn-sm btn-ghost header-btn-narrow" onClick={() => setShowOverflowMenu(true)}>
+            ⋯
           </button>
         </div>
       </header>
@@ -186,6 +192,32 @@ export function FlightsListScreen() {
           onChange={(columns) => persistSettings({ ...settings, columns })}
           onClose={() => setShowColumnSheet(false)}
         />
+      )}
+
+      {showOverflowMenu && (
+        <div className="sheet-backdrop" onClick={() => setShowOverflowMenu(false)}>
+          <div className="sheet overflow-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-header">
+              <span className="sheet-title">Menu</span>
+              <button className="btn btn-sm btn-ghost" onClick={() => setShowOverflowMenu(false)}>✕</button>
+            </div>
+            <div className="overflow-menu-items">
+              <button className="overflow-menu-item" onClick={() => { setShowFilters((v) => !v); setShowOverflowMenu(false); }}>
+                <span>Filter</span>
+                {showFilters && <span className="overflow-menu-badge">On</span>}
+              </button>
+              <button className="overflow-menu-item" onClick={() => { setShowColumnSheet(true); setShowOverflowMenu(false); }}>
+                Columns
+              </button>
+              <button className="overflow-menu-item" onClick={() => { navigate("/flight/new"); setShowOverflowMenu(false); }}>
+                + Manual flight
+              </button>
+              <button className="overflow-menu-item" onClick={() => { navigate("/settings"); setShowOverflowMenu(false); }}>
+                Settings
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
