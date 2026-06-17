@@ -18,4 +18,4 @@ export type { XcScore } from "./types";
 export * from "./units";
 export * from "./colors";
 export { buildFlightRecord, ANALYSIS_VERSION } from "./record";
-export type { FlightRecord } from "./record";
+export type { FlightRecord, GroundProfile } from "./record";

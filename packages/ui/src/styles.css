@@ -384,6 +384,43 @@ body {
   height: auto;
   display: block;
   cursor: crosshair;
+  touch-action: pan-y;
+}
+.barogram .panel-title {
+  justify-content: space-between;
+}
+.barogram-reset-zoom {
+  margin-left: auto;
+}
+.baro-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+  flex: 1;
+}
+.baro-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.baro-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+}
+.baro-legend-swatch--terrain {
+  background: rgba(50, 55, 65, 0.75);
+  border: 1px solid rgba(90, 95, 110, 0.9);
+}
+.baro-terrain {
+  fill: rgba(50, 55, 65, 0.55);
+  stroke: rgba(90, 95, 110, 0.8);
+  stroke-width: 1;
 }
 .baro-area {
   fill: rgba(66, 165, 245, 0.07);

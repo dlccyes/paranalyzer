@@ -21,6 +21,7 @@ export interface AnalysisViewProps {
   summarySlot?: ReactNode;
   mapBase?: "street" | "satellite";
   onMapBaseChange?: (base: "street" | "satellite") => void;
+  groundAlt?: number[];
 }
 
 export function AnalysisView({
@@ -34,6 +35,7 @@ export function AnalysisView({
   summarySlot,
   mapBase,
   onMapBaseChange,
+  groundAlt,
 }: AnalysisViewProps) {
   const [unitsLocal, setUnitsLocal] = useState<UnitSystem>(
     () => (localStorage.getItem("paranalyzer.units") as UnitSystem) || "metric",
@@ -79,6 +81,7 @@ export function AnalysisView({
         hoverIdx={hoverIdx}
         onHoverIdx={setHoverIdx}
         onSelect={setSelected}
+        groundAlt={groundAlt}
       />
       <div className="tables">
         <ThermalsTable

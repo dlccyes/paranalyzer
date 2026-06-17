@@ -2,6 +2,11 @@ import type { Flight, ParsedTrack } from "./types";
 
 export const ANALYSIS_VERSION = 3;
 
+export interface GroundProfile {
+  sampleIdx: number[];
+  elev: number[];
+}
+
 export interface FlightRecord {
   id: string;
   importedAt: number;
@@ -43,6 +48,7 @@ export interface FlightRecord {
   note: string;
   xcontestPoints?: number;
   xcontestUrl?: string;
+  groundProfile?: GroundProfile;
 }
 
 export function buildFlightRecord(

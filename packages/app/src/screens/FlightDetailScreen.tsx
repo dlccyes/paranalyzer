@@ -16,6 +16,7 @@ import { getPlatform } from "../platform";
 import { readTrack, deleteTrack } from "../data/trackStore";
 import { SiteSelect } from "../components/SiteSelect";
 import { analyzeWithSettings } from "../data/analyze";
+import { ensureGroundProfile, buildGroundAlt } from "../data/terrain";
 import { DEFAULT_SETTINGS, type FlightRecord, type Settings } from "../data/model";
 import type { UnitSystem } from "@paranalyzer/core";
 
@@ -39,6 +40,7 @@ export function FlightDetailScreen() {
   const [noteSaving, setNoteSaving] = useState(false);
   const [mapBase, setMapBase] = useState<Settings["mapBase"]>("street");
   const [fullSettings, setFullSettings] = useState<Settings | null>(null);
+  const [groundAlt, setGroundAlt] = useState<number[] | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -67,7 +69,11 @@ export function FlightDetailScreen() {
         if (cancelled) return;
         const parsed = parseTrack(record.fileName ?? `flight.${record.source}`, text);
         const analysed = await analyzeWithSettings(parsed, cfg);
-        if (!cancelled) setFlight(analysed);
+        if (cancelled) return;
+        setFlight(analysed);
+        const [start, end] = analysed.range;
+        const profile = await ensureGroundProfile(id, analysed.fixes, start, end);
+        if (!cancelled && profile) setGroundAlt(buildGroundAlt(analysed.fixes, profile, start, end));
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load flight");
       }
@@ -229,6 +235,7 @@ export function FlightDetailScreen() {
                 summarySlot={summarySlot}
                 mapBase={mapBase}
                 onMapBaseChange={handleMapBaseChange}
+                groundAlt={groundAlt ?? undefined}
               />
             )}
           </>
