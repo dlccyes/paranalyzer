@@ -1,13 +1,15 @@
 # Plans — June 2026 batch
 
-Four work items. The first two are concrete implementation plans; the last two
-are **feasibility explorations** (research + recommendation + a scoped spike,
-not a commitment to ship).
+Open work items. Docs 03–04 are **feasibility explorations** (research +
+recommendation + a scoped spike, not a commitment to ship); docs 05–06 are
+concrete implementation plans.
 
 | # | Item | Type | Doc |
 |---|------|------|-----|
 | 3 | 3D track rendering | Feasibility | [03-3d-rendering-feasibility.md](03-3d-rendering-feasibility.md) |
 | 4 | In-app update detection | Feasibility | [04-in-app-update-detection.md](04-in-app-update-detection.md) |
+| 5 | Mobile barogram sizing + touch | Implementation | [05-mobile-barogram.md](05-mobile-barogram.md) |
+| 6 | Ground level in the barogram | Implementation | [06-barogram-ground-level.md](06-barogram-ground-level.md) |
 
 ## Shared context
 
