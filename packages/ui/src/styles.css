@@ -201,12 +201,31 @@ body {
   background: var(--card);
 }
 .time-breakdown {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(132px, 180px) minmax(0, 300px);
   align-items: center;
   gap: 18px;
   padding: 16px 20px 18px;
   justify-content: start;
+}
+.donut-clear {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 2;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 3px 9px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.donut-clear:hover {
+  border-color: var(--accent);
+  color: var(--text);
 }
 .time-pie-wrap {
   display: flex;
@@ -389,7 +408,10 @@ body {
 .barogram .panel-title {
   justify-content: space-between;
 }
-.barogram-reset-zoom {
+.baro-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-left: auto;
 }
 .baro-legend {
@@ -447,6 +469,46 @@ body {
   line-height: 1.5;
   pointer-events: none;
   white-space: nowrap;
+}
+
+/* Scope / minimap shown when the barogram is zoomed in */
+.baro-scope {
+  position: relative;
+  height: 30px;
+  margin: 2px 12px 8px;
+  border-radius: 7px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: none;
+}
+.baro-scope-mini {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.baro-scope-area {
+  fill: rgba(122, 162, 247, 0.22);
+  stroke: rgba(122, 162, 247, 0.55);
+  stroke-width: 0.6;
+  vector-effect: non-scaling-stroke;
+}
+.baro-scope-window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 12px;
+  background: rgba(91, 140, 255, 0.20);
+  border: 1.5px solid rgba(91, 140, 255, 0.95);
+  border-radius: 5px;
+  cursor: grab;
+  pointer-events: none;
+}
+.baro-scope-window:active {
+  cursor: grabbing;
 }
 
 /* ---------- tables ---------- */

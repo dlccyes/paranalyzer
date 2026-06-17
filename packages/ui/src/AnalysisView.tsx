@@ -78,6 +78,7 @@ export function AnalysisView({
         flight={flight}
         fmt={fmt}
         active={activePhase}
+        selected={selected}
         hoverIdx={hoverIdx}
         onHoverIdx={setHoverIdx}
         onSelect={setSelected}

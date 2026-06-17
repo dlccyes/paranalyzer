@@ -735,6 +735,13 @@ body,
 }
 .xc-link:hover { text-decoration: underline; }
 
+.note-cell {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .site-edit-input,
 .site-add-input {
   flex: 1;

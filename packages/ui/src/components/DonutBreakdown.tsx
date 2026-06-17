@@ -39,6 +39,17 @@ export function DonutBreakdown({
 
   return (
     <div className="time-breakdown">
+      {activeKey && onSegmentClick && (
+        <button
+          type="button"
+          className="donut-clear"
+          onClick={() => onSegmentClick(activeKey)}
+          aria-label="Clear selection"
+          title="Clear selection"
+        >
+          ✕ Clear
+        </button>
+      )}
       <div className="time-pie-wrap" aria-label={centerLabel}>
         <svg className="time-pie" viewBox="0 0 120 120" role="img">
           <circle className="time-pie-base" cx="60" cy="60" r="46" />

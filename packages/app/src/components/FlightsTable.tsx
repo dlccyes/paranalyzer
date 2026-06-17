@@ -93,13 +93,6 @@ function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
     ),
     col("xcontestUrl", (r) => {
       if (!r.xcontestUrl) return "—";
-      let label: string;
-      try {
-        const u = new URL(r.xcontestUrl);
-        label = u.pathname.replace(/\/$/, "").split("/").pop() || u.hostname;
-      } catch {
-        label = r.xcontestUrl;
-      }
       return (
         <a
           className="xc-link"
@@ -108,11 +101,11 @@ function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
         >
-          {label}
+          link
         </a>
       );
     }),
-    col("note", (r) => r.note || ""),
+    col("note", (r) => (r.note ? <div className="note-cell" title={r.note}>{r.note}</div> : "")),
   ];
 }
 

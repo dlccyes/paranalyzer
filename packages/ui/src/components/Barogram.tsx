@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { AnyPhase, Flight } from "@paranalyzer/core";
 import { PHASE_COLORS, varioColor, formatClock, type UnitFormatter } from "@paranalyzer/core";
 
@@ -6,6 +6,7 @@ interface Props {
   flight: Flight;
   fmt: UnitFormatter;
   active: AnyPhase | null;
+  selected?: AnyPhase | null;
   hoverIdx: number | null;
   onHoverIdx: (i: number | null) => void;
   onSelect: (p: AnyPhase | null) => void;
@@ -24,7 +25,17 @@ const LAYOUT_WIDE: Layout = { W: 1000, H: 240, PAD: { l: 46, r: 14, t: 12, b: 26
 const LAYOUT_TALL: Layout = { W: 560,  H: 360, PAD: { l: 46, r: 14, t: 12, b: 26 }, PLOT_W: 500, PLOT_H: 322 };
 const MIN_WINDOW_S = 30;
 
-export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect, groundAlt }: Props) {
+/** Keep a [tStart, tEnd] window inside [t0, t1] and no narrower than MIN_WINDOW_S. */
+function clampWindow(tS: number, tE: number, t0: number, t1: number): { tStart: number; tEnd: number } {
+  let w = tE - tS;
+  if (w < MIN_WINDOW_S) { w = MIN_WINDOW_S; tE = tS + w; }
+  if (w >= t1 - t0) return { tStart: t0, tEnd: t1 };
+  if (tS < t0) { tS = t0; tE = t0 + w; }
+  if (tE > t1) { tE = t1; tS = t1 - w; }
+  return { tStart: tS, tEnd: tE };
+}
+
+export function Barogram({ flight, fmt, active, selected, hoverIdx, onHoverIdx, onSelect, groundAlt }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(() =>
@@ -88,6 +99,56 @@ export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect, 
     return lo;
   }, [s, e, derived]);
 
+  // Full-flight altitude sparkline for the scope/minimap (independent of zoom).
+  const miniPath = useMemo(() => {
+    const t0 = derived.t[s];
+    const t1 = derived.t[e];
+    let aMin = Infinity, aMax = -Infinity;
+    for (let i = s; i <= e; i++) {
+      const a = fixes[i].alt;
+      if (a < aMin) aMin = a;
+      if (a > aMax) aMax = a;
+    }
+    const span = aMax - aMin || 1;
+    const mx = (t: number) => ((t - t0) / (t1 - t0)) * 100;
+    const my = (a: number) => 20 - ((a - aMin) / span) * 20;
+    let d = "M 0 20 ";
+    for (let i = s; i <= e; i++) d += `L ${mx(derived.t[i]).toFixed(2)} ${my(fixes[i].alt).toFixed(2)} `;
+    return d + "L 100 20 Z";
+  }, [s, e, derived, fixes]);
+
+  // Drag the scope window to pan the zoomed view.
+  const scopeDragRef = useRef<{ startX: number; startView: { tStart: number; tEnd: number }; trackW: number } | null>(null);
+
+  const onScopePointerDown = (ev: ReactPointerEvent<HTMLDivElement>) => {
+    if (!view) return;
+    const rect = ev.currentTarget.getBoundingClientRect();
+    const { t0, t1 } = model;
+    const winW = view.tEnd - view.tStart;
+    const clickT = t0 + ((ev.clientX - rect.left) / rect.width) * (t1 - t0);
+    // Clicking outside the window recenters it on the tap point first.
+    let startView = view;
+    if (clickT < view.tStart || clickT > view.tEnd) {
+      startView = clampWindow(clickT - winW / 2, clickT + winW / 2, t0, t1);
+      setView(startView);
+    }
+    scopeDragRef.current = { startX: ev.clientX, startView: { ...startView }, trackW: rect.width };
+    ev.currentTarget.setPointerCapture(ev.pointerId);
+  };
+
+  const onScopePointerMove = (ev: ReactPointerEvent<HTMLDivElement>) => {
+    const d = scopeDragRef.current;
+    if (!d) return;
+    const { t0, t1 } = model;
+    const dt = ((ev.clientX - d.startX) / d.trackW) * (t1 - t0);
+    setView(clampWindow(d.startView.tStart + dt, d.startView.tEnd + dt, t0, t1));
+  };
+
+  const endScopeDrag = (ev: ReactPointerEvent<HTMLDivElement>) => {
+    scopeDragRef.current = null;
+    if (ev.currentTarget.hasPointerCapture(ev.pointerId)) ev.currentTarget.releasePointerCapture(ev.pointerId);
+  };
+
   // Native touch handlers (non-passive so preventDefault() works)
   const touchStateRef = useRef<{
     mode: "idle" | "scrub" | "pinch";
@@ -111,15 +172,6 @@ export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect, 
       const rect = svg!.getBoundingClientRect();
       const { W, PAD, PLOT_W } = layoutRef.current;
       return (((clientX - rect.left) / rect.width) * W - PAD.l) / PLOT_W;
-    }
-
-    function clampView(tS: number, tE: number, t0: number, t1: number): { tStart: number; tEnd: number } {
-      let w = tE - tS;
-      if (w < MIN_WINDOW_S) { w = MIN_WINDOW_S; tE = tS + w; }
-      if (w >= t1 - t0) return { tStart: t0, tEnd: t1 };
-      if (tS < t0) { tS = t0; tE = t0 + w; }
-      if (tE > t1) { tE = t1; tS = t1 - w; }
-      return { tStart: tS, tEnd: tE };
     }
 
     const onStart = (e: TouchEvent) => {
@@ -171,7 +223,7 @@ export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect, 
         const m = modelRef.current;
         const t0 = m?.t0 ?? pinchViewAtStart.tStart;
         const t1 = m?.t1 ?? pinchViewAtStart.tEnd;
-        setView(clampView(newTStart, newTStart + newWidth, t0, t1));
+        setView(clampWindow(newTStart, newTStart + newWidth, t0, t1));
       } else if (e.touches.length === 1) {
         ts.mode = "scrub";
         e.preventDefault();
@@ -217,11 +269,18 @@ export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect, 
             </span>
           )}
         </span>
-        {isZoomed && (
-          <button className="btn btn-xs btn-ghost barogram-reset-zoom" onClick={() => setView(null)}>
-            ⟲ Reset zoom
-          </button>
-        )}
+        <span className="baro-actions">
+          {selected && (
+            <button className="btn btn-xs btn-ghost" onClick={() => onSelect(null)}>
+              ✕ Deselect
+            </button>
+          )}
+          {isZoomed && (
+            <button className="btn btn-xs btn-ghost" onClick={() => setView(null)}>
+              ⟲ Reset zoom
+            </button>
+          )}
+        </span>
       </div>
       <div className="barogram-plot" ref={containerRef}>
         <svg
@@ -316,6 +375,27 @@ export function Barogram({ flight, fmt, active, hoverIdx, onHoverIdx, onSelect, 
           </div>
         )}
       </div>
+
+      {isZoomed && (
+        <div
+          className="baro-scope"
+          onPointerDown={onScopePointerDown}
+          onPointerMove={onScopePointerMove}
+          onPointerUp={endScopeDrag}
+          onPointerCancel={endScopeDrag}
+        >
+          <svg className="baro-scope-mini" viewBox="0 0 100 20" preserveAspectRatio="none">
+            <path d={miniPath} className="baro-scope-area" />
+          </svg>
+          <div
+            className="baro-scope-window"
+            style={{
+              left: `${((view!.tStart - model.t0) / (model.t1 - model.t0)) * 100}%`,
+              width: `${((view!.tEnd - view!.tStart) / (model.t1 - model.t0)) * 100}%`,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
