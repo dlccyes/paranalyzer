@@ -7,6 +7,9 @@ const DEG = Math.PI / 180;
 export const PARAMS = {
   turnSmoothHalfSec: 4,
   circlingThresholdDegPerSec: 6,
+  /** Minimum straight-line step (m) between heading samples when counting turns.
+   *  Rejects GPS jitter at near-zero ground speed, which otherwise inflates the count. */
+  minTurnStepM: 6,
   bridgeGapSec: 10,
   minSignificantTurns: 0.75,
   /** Minimum turns for a climbing circle to count as a thermal. Configurable. */
@@ -47,18 +50,25 @@ export function detectCircling(
   bridgeGapSec: number = PARAMS.bridgeGapSec,
 ): CirclingResult {
   const str = smoothTurnRate(derived, startIdx, endIdx);
-  const runs = findCirclingRuns(derived, str, startIdx, endIdx, bridgeGapSec);
+  const runs = findCirclingRuns(fixes, derived, str, startIdx, endIdx, bridgeGapSec);
 
   const significant = runs.filter((r) => r.turns >= PARAMS.minSignificantTurns);
 
   const thermals: Thermal[] = [];
   const badTurns: BadTurn[] = [];
   for (const run of runs) {
-    const c = buildCircling(fixes, derived, str, run);
-    const climbing = c.climbRate > PARAMS.climbThresholdMs;
+    const dur = derived.t[run.b] - derived.t[run.a];
+    const climbing =
+      dur > 0 && (fixes[run.b].alt - fixes[run.a].alt) / dur > PARAMS.climbThresholdMs;
     if (climbing && run.turns >= thermalMinTurns) {
+      // Trim the thermal to its genuinely-climbing core so lead-in and post-peak
+      // sink (which the pilot circled through) are not reported as part of the climb.
+      const [ca, cb] = climbingCore(fixes, run.a, run.b);
+      const core = { a: ca, b: cb, turns: countTurns(fixes, ca, cb) };
+      const c = buildCircling(fixes, derived, str, core);
       thermals.push({ kind: "thermal", climb: c.altChange, ...c });
     } else if (!climbing && run.turns > PARAMS.badTurnMinTurns) {
+      const c = buildCircling(fixes, derived, str, run);
       badTurns.push({ kind: "badturn", ...c });
     }
   }
@@ -139,6 +149,7 @@ function smoothTurnRate(d: Derived, s: number, e: number): number[] {
 }
 
 function findCirclingRuns(
+  fixes: Fix[],
   d: Derived,
   str: number[],
   s: number,
@@ -168,15 +179,57 @@ function findCirclingRuns(
     }
   }
 
-  return merged.map(({ a: ra, b: rb }) => {
-    let total = 0;
-    for (let i = ra + 1; i <= rb; i++) total += Math.abs(angleDiff(d.bearing[i - 1], d.bearing[i]));
-    return {
-      a: ra,
-      b: rb,
-      turns: total / 360,
-    };
-  });
+  return merged.map(({ a: ra, b: rb }) => ({
+    a: ra,
+    b: rb,
+    turns: countTurns(fixes, ra, rb),
+  }));
+}
+
+/**
+ * Cumulative heading change over [a, b] expressed in full turns (total absolute
+ * rotation / 360). Heading is only sampled once the glider has actually moved
+ * `minTurnStepM` metres from the previous sample, so GPS jitter while nearly
+ * stationary — where per-fix displacement is the size of the position error — no
+ * longer accumulates spurious rotation.
+ */
+function countTurns(fixes: Fix[], a: number, b: number): number {
+  const minStep = PARAMS.minTurnStepM;
+  let total = 0;
+  let anchor = a;
+  let prev: number | null = null;
+  for (let i = a + 1; i <= b; i++) {
+    if (haversine(fixes[anchor].lat, fixes[anchor].lon, fixes[i].lat, fixes[i].lon) < minStep) {
+      continue;
+    }
+    const brg = bearing(fixes[anchor].lat, fixes[anchor].lon, fixes[i].lat, fixes[i].lon);
+    if (prev !== null) total += Math.abs(angleDiff(prev, brg));
+    prev = brg;
+    anchor = i;
+  }
+  return total / 360;
+}
+
+/**
+ * The maximum-altitude-gain sub-interval of [a, b] — a thermal's genuinely-climbing
+ * core. Trims lead-in before the climb starts and any post-peak sink the pilot
+ * circled through, so an embedded/trailing sink isn't counted as part of the climb.
+ */
+function climbingCore(fixes: Fix[], a: number, b: number): [number, number] {
+  let lo = a;
+  let best = -Infinity;
+  let ca = a;
+  let cb = a;
+  for (let i = a; i <= b; i++) {
+    if (fixes[i].alt < fixes[lo].alt) lo = i;
+    const gain = fixes[i].alt - fixes[lo].alt;
+    if (gain > best) {
+      best = gain;
+      ca = lo;
+      cb = i;
+    }
+  }
+  return [ca, cb];
 }
 
 type CirclingMetrics = Omit<Thermal, "kind" | "climb">;
