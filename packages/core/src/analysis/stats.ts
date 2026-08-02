@@ -48,6 +48,7 @@ export function computeStats(
 
   const airtime = d.t[end] - d.t[start];
   const trackLength = d.cumDist[end] - d.cumDist[start];
+  const trackGlideRatio = elevationDrop > 1 ? trackLength / elevationDrop : null;
   const straightDistance = haversine(
     fixes[start].lat, fixes[start].lon, fixes[end].lat, fixes[end].lon,
   );
@@ -68,6 +69,7 @@ export function computeStats(
     maxClimb,
     maxSink,
     trackLength,
+    trackGlideRatio,
     straightDistance,
     straightGlideRatio,
     freeDistance: freeDistance(fixes, start, end),

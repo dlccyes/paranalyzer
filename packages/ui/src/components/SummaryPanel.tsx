@@ -74,6 +74,10 @@ export function SummaryPanel({ flight, fmt, dateFormat = "dmy", children }: Prop
             "Straight glide ratio",
             stats.straightGlideRatio != null ? stats.straightGlideRatio.toFixed(1) : "—",
           )}
+          {stat(
+            "Track glide ratio",
+            stats.trackGlideRatio != null ? stats.trackGlideRatio.toFixed(1) : "—",
+          )}
         </div>
       </div>
       {children}

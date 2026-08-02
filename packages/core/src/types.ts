@@ -183,6 +183,8 @@ export interface FlightStats {
   maxSink: number;
   /** Total along-track length, metres. */
   trackLength: number;
+  /** Along-track distance / elevation drop. */
+  trackGlideRatio: number | null;
   /** Straight-line distance takeoff → landing, metres. */
   straightDistance: number;
   /** Straight takeoff-to-landing distance / elevation drop. */
