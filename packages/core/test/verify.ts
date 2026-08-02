@@ -32,10 +32,11 @@ console.log("elevation drop:", f.stats.elevationDrop.toFixed(0), "m (launch → 
 console.log("max climb:", ms(f.stats.maxClimb), "(1.6 m/s)");
 console.log("max sink:", ms(-f.stats.maxSink), "(-2.7 m/s)");
 console.log("track length:", km(f.stats.trackLength), "(37.413 km)");
-console.log("track glide ratio:", f.stats.trackGlideRatio?.toFixed(1) ?? "n/a");
+console.log("track glide:", f.stats.trackGlideRatio?.toFixed(1) ?? "n/a");
 console.log("straight dist:", km(f.stats.straightDistance));
-console.log("straight glide ratio:", f.stats.straightGlideRatio?.toFixed(1) ?? "n/a");
+console.log("straight glide:", f.stats.straightGlideRatio?.toFixed(1) ?? "n/a");
 console.log("free distance:", km(f.stats.freeDistance), "(~14.09 km)");
+console.log("free distance glide:", f.stats.freeDistanceGlideRatio?.toFixed(1) ?? "n/a");
 console.log("avg speed:", (f.stats.avgSpeed * 3.6).toFixed(2), "km/h (8.93 km/h)");
 console.log("time in thermal:", formatDuration(f.stats.timeInThermal));
 console.log("time in glide:", formatDuration(f.stats.timeInGlide));
@@ -102,6 +103,10 @@ assert(
 assert(
   f.stats.trackGlideRatio === f.stats.trackLength / f.stats.elevationDrop,
   `trackGlideRatio is track length divided by elevation drop (got ${f.stats.trackGlideRatio?.toFixed(1)})`,
+);
+assert(
+  f.stats.freeDistanceGlideRatio === f.stats.freeDistance / f.stats.elevationDrop,
+  `freeDistanceGlideRatio is free distance divided by elevation drop (got ${f.stats.freeDistanceGlideRatio?.toFixed(1)})`,
 );
 assert(f.stats.trackLength > 36000, `trackLength >36km (got ${km(f.stats.trackLength)})`);
 assert(f.stats.timeInThermal > 0, "timeInThermal > 0");

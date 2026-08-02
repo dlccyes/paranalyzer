@@ -104,7 +104,7 @@ export function GlidesTable({ glides, fmt, tz, selected, onSelect, onHover }: Pr
                     <td className={sinkClass(g.totalSink)}>{fmt.altitude(g.totalSink)}</td>
                     <td className={sinkClass(g.totalSink)}>{fmt.vario(g.avgSinkRate)}</td>
                     <td className="glide-ratio">
-                      {g.glideRatio != null ? `${g.glideRatio.toFixed(1)}:1` : "—"}
+                      {g.glideRatio != null ? g.glideRatio.toFixed(1) : "—"}
                     </td>
                     <td className="wind-cell">
                       {g.wind ? (

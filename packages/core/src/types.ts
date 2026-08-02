@@ -191,6 +191,8 @@ export interface FlightStats {
   straightGlideRatio: number | null;
   /** Open ("free") distance via up to 3 turnpoints, metres. */
   freeDistance: number;
+  /** Free distance / elevation drop. */
+  freeDistanceGlideRatio: number | null;
   /** Average ground speed over airtime, m/s. */
   avgSpeed: number;
   /** Overall wind estimate from all thermals, if any. */

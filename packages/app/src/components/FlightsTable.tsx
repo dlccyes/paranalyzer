@@ -74,6 +74,7 @@ function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
     col("avgSpeed", (r) => fmt.speed(r.avgSpeed)),
     col("straightGlideRatio", (r) => r.straightGlideRatio != null ? r.straightGlideRatio.toFixed(1) : "—"),
     col("trackGlideRatio", (r) => r.trackGlideRatio != null ? r.trackGlideRatio.toFixed(1) : "—"),
+    col("freeDistanceGlideRatio", (r) => r.freeDistanceGlideRatio != null ? r.freeDistanceGlideRatio.toFixed(1) : "—"),
     col("thermalCount", (r) => String(r.thermalCount), sumCount("thermalCount")),
     col("glideCount", (r) => String(r.glideCount), sumCount("glideCount")),
     col("ridgeCount", (r) => String(r.ridgeCount), sumCount("ridgeCount")),

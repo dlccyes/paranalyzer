@@ -71,12 +71,16 @@ export function SummaryPanel({ flight, fmt, dateFormat = "dmy", children }: Prop
             stats.xcScore.type || undefined,
           )}
           {stat(
-            "Straight glide ratio",
+            "Straight glide",
             stats.straightGlideRatio != null ? stats.straightGlideRatio.toFixed(1) : "—",
           )}
           {stat(
-            "Track glide ratio",
+            "Track glide",
             stats.trackGlideRatio != null ? stats.trackGlideRatio.toFixed(1) : "—",
+          )}
+          {stat(
+            "Free distance glide",
+            stats.freeDistanceGlideRatio != null ? stats.freeDistanceGlideRatio.toFixed(1) : "—",
           )}
         </div>
       </div>

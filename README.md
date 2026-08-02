@@ -14,8 +14,7 @@ upload, no backend, your track never leaves your device.
   device's timezone), airtime, max altitude, max altitude gain, elevation drop
   from launch to landing, max sustained
   climb/sink, track length, straight-line distance, open ("free") distance and
-  average ground speed, plus straight and along-track launch-to-landing glide
-  ratios.
+  average ground speed, plus straight, along-track and free-distance glides.
 - **Thermals** (well-formed = **≥ 3 turns and climbing**): number of turns +
   direction, total climb, average climb rate, average circling radius, and
   per-thermal wind.
@@ -23,7 +22,7 @@ upload, no backend, your track never leaves your device.
   **without climbing** — with turns, altitude lost and sink rate.
 - **Glides** (straight lines): course (as an arrow) + the **angle to the wind**
   (0° = tailwind), ground distance, ground speed, **total sink**, **average sink
-  rate**, **ground glide ratio**, and the wind that applied.
+  rate**, **ground glide**, and the wind that applied.
 - **Wind estimation** from the GPS ground-velocity circle traced while
   thermalling (Kåsa circle fit) — per thermal and overall.
 - **Interactive map** (Leaflet / OpenStreetMap) with the track coloured by

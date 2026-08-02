@@ -9,7 +9,7 @@ export type FieldId =
   | "airtime" | "timeInThermal" | "timeInGlide" | "timeInRidge"
   | "elevationDrop" | "maxAlt" | "maxAltGain" | "maxClimb" | "maxSink"
   | "trackLength" | "straightDistance" | "freeDistance" | "avgSpeed"
-  | "straightGlideRatio" | "trackGlideRatio"
+  | "straightGlideRatio" | "trackGlideRatio" | "freeDistanceGlideRatio"
   | "thermalCount" | "glideCount" | "ridgeCount"
   | "windSpeed" | "windFromDeg" | "note" | "xcontestPoints" | "xcontestUrl";
 
@@ -37,6 +37,7 @@ export const FIELD_TYPES: Record<FieldId, FilterFieldType> = {
   avgSpeed: "speed",
   straightGlideRatio: "ratio",
   trackGlideRatio: "ratio",
+  freeDistanceGlideRatio: "ratio",
   thermalCount: "count",
   glideCount: "count",
   ridgeCount: "count",
@@ -97,7 +98,7 @@ export const ALL_FIELDS: FieldId[] = [
   "airtime", "timeInThermal", "timeInGlide", "timeInRidge",
   "elevationDrop", "maxAlt", "maxAltGain", "maxClimb", "maxSink",
   "trackLength", "straightDistance", "freeDistance", "avgSpeed",
-  "straightGlideRatio", "trackGlideRatio",
+  "straightGlideRatio", "trackGlideRatio", "freeDistanceGlideRatio",
   "thermalCount", "glideCount", "ridgeCount",
   "windSpeed", "windFromDeg", "xcontestPoints", "xcontestUrl", "note",
 ];
@@ -120,8 +121,9 @@ export const FIELD_LABELS: Record<FieldId, string> = {
   straightDistance: "Straight",
   freeDistance: "Free dist",
   avgSpeed: "Avg speed",
-  straightGlideRatio: "Straight glide ratio",
-  trackGlideRatio: "Track glide ratio",
+  straightGlideRatio: "Straight glide",
+  trackGlideRatio: "Track glide",
+  freeDistanceGlideRatio: "Free distance glide",
   thermalCount: "Thermals",
   glideCount: "Glides",
   ridgeCount: "Ridge runs",

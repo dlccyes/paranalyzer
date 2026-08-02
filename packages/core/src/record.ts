@@ -1,6 +1,6 @@
 import type { Flight, ParsedTrack } from "./types";
 
-export const ANALYSIS_VERSION = 6;
+export const ANALYSIS_VERSION = 7;
 
 export interface GroundProfile {
   sampleIdx: number[];
@@ -42,6 +42,8 @@ export interface FlightRecord {
   /** Computed for flights imported from a track. */
   trackGlideRatio?: number;
   freeDistance: number;
+  /** Computed for flights imported from a track. */
+  freeDistanceGlideRatio?: number;
   avgSpeed: number;
 
   thermalCount: number;
@@ -95,6 +97,7 @@ export function buildFlightRecord(
     straightGlideRatio: stats.straightGlideRatio ?? undefined,
     trackGlideRatio: stats.trackGlideRatio ?? undefined,
     freeDistance: stats.freeDistance,
+    freeDistanceGlideRatio: stats.freeDistanceGlideRatio ?? undefined,
     avgSpeed: stats.avgSpeed,
 
     thermalCount: thermals.length,

@@ -53,6 +53,8 @@ export function computeStats(
     fixes[start].lat, fixes[start].lon, fixes[end].lat, fixes[end].lon,
   );
   const straightGlideRatio = elevationDrop > 1 ? straightDistance / elevationDrop : null;
+  const freeDist = freeDistance(fixes, start, end);
+  const freeDistanceGlideRatio = elevationDrop > 1 ? freeDist / elevationDrop : null;
 
   const timeInThermal = thermals.reduce((s, t) => s + t.duration, 0);
   const timeInGlide = glides.reduce((s, g) => s + g.duration, 0);
@@ -72,7 +74,8 @@ export function computeStats(
     trackGlideRatio,
     straightDistance,
     straightGlideRatio,
-    freeDistance: freeDistance(fixes, start, end),
+    freeDistance: freeDist,
+    freeDistanceGlideRatio,
     avgSpeed: airtime > 0 ? trackLength / airtime : 0,
     wind: averageWind(thermals.map((t) => ({ wind: t.wind, weight: t.turns }))),
     timeInThermal,
