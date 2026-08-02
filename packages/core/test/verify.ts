@@ -28,6 +28,7 @@ console.log("\n=== STATS (expected from XContest in parens) ===");
 console.log("airtime:", formatDuration(f.stats.airtime, true), "(1:21:46)");
 console.log("max alt:", f.stats.maxAlt.toFixed(0), "m (1853 m)");
 console.log("max alt gain:", f.stats.maxAltGain.toFixed(0), "m (1029 m)");
+console.log("elevation drop:", f.stats.elevationDrop.toFixed(0), "m (launch → landing)");
 console.log("max climb:", ms(f.stats.maxClimb), "(1.6 m/s)");
 console.log("max sink:", ms(-f.stats.maxSink), "(-2.7 m/s)");
 console.log("track length:", km(f.stats.trackLength), "(37.413 km)");
@@ -87,6 +88,11 @@ function assert(cond: boolean, msg: string) {
 assert(f.thermals.length > 0, "thermals detected");
 assert(Math.abs(f.stats.airtime - 4888) < 120, `airtime ~4888s (got ${f.stats.airtime.toFixed(0)})`);
 assert(Math.abs(f.stats.maxAlt - 1853) < 10, `maxAlt ~1853m (got ${f.stats.maxAlt.toFixed(0)})`);
+const [launchIdx, landingIdx] = f.range;
+assert(
+  f.stats.elevationDrop === f.fixes[launchIdx].alt - f.fixes[landingIdx].alt,
+  `elevationDrop is launch altitude minus landing altitude (got ${f.stats.elevationDrop.toFixed(0)}m)`,
+);
 assert(f.stats.trackLength > 36000, `trackLength >36km (got ${km(f.stats.trackLength)})`);
 assert(f.stats.timeInThermal > 0, "timeInThermal > 0");
 console.log("\nAll checks passed.");

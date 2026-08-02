@@ -7,7 +7,7 @@ export const DB_SCHEMA_VERSION = 1;
 export type FieldId =
   | "startTime" | "glider" | "site" | "pilot"
   | "airtime" | "timeInThermal" | "timeInGlide" | "timeInRidge"
-  | "maxAlt" | "maxAltGain" | "maxClimb" | "maxSink"
+  | "elevationDrop" | "maxAlt" | "maxAltGain" | "maxClimb" | "maxSink"
   | "trackLength" | "straightDistance" | "freeDistance" | "avgSpeed"
   | "thermalCount" | "glideCount" | "ridgeCount"
   | "windSpeed" | "windFromDeg" | "note" | "xcontestPoints" | "xcontestUrl";
@@ -25,6 +25,7 @@ export const FIELD_TYPES: Record<FieldId, FilterFieldType> = {
   timeInThermal: "duration",
   timeInGlide: "duration",
   timeInRidge: "duration",
+  elevationDrop: "altitude",
   maxAlt: "altitude",
   maxAltGain: "altitude",
   maxClimb: "vario",
@@ -91,7 +92,7 @@ export interface DbDocument {
 export const ALL_FIELDS: FieldId[] = [
   "startTime", "glider", "site", "pilot",
   "airtime", "timeInThermal", "timeInGlide", "timeInRidge",
-  "maxAlt", "maxAltGain", "maxClimb", "maxSink",
+  "elevationDrop", "maxAlt", "maxAltGain", "maxClimb", "maxSink",
   "trackLength", "straightDistance", "freeDistance", "avgSpeed",
   "thermalCount", "glideCount", "ridgeCount",
   "windSpeed", "windFromDeg", "xcontestPoints", "xcontestUrl", "note",
@@ -106,6 +107,7 @@ export const FIELD_LABELS: Record<FieldId, string> = {
   timeInThermal: "Time in thermal",
   timeInGlide: "Time in glide",
   timeInRidge: "Time in ridge soaring",
+  elevationDrop: "Elevation drop",
   maxAlt: "Max alt",
   maxAltGain: "Alt gain",
   maxClimb: "Max climb",

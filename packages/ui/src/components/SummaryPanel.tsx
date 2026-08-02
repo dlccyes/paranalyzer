@@ -56,6 +56,7 @@ export function SummaryPanel({ flight, fmt, dateFormat = "dmy", children }: Prop
             stats.airtime > 0 ? `${Math.round((stats.timeInGlide / stats.airtime) * 100)}% of airtime` : undefined)}
           {stat("Time in ridge soaring", formatDurationHM(stats.timeInRidge),
             stats.airtime > 0 ? `${Math.round((stats.timeInRidge / stats.airtime) * 100)}% of airtime` : undefined)}
+          {stat("Elevation drop", fmt.altitude(stats.elevationDrop))}
           {stat("Max altitude", fmt.altitude(stats.maxAlt))}
           {stat("Max alt. gain", fmt.altitude(stats.maxAltGain))}
           {stat("Max climb", fmt.vario(stats.maxClimb), "sustained 30 s")}

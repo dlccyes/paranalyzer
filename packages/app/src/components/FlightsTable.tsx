@@ -63,6 +63,7 @@ function buildColumns(units: UnitSystem, dateFormat: "dmy" | "ymd") {
     col("timeInThermal", (r) => formatDurationHM(r.timeInThermal), sumDuration("timeInThermal")),
     col("timeInGlide", (r) => r.timeInGlide != null ? formatDurationHM(r.timeInGlide) : "—", sumDuration("timeInGlide")),
     col("timeInRidge", (r) => formatDurationHM(r.timeInRidge), sumDuration("timeInRidge")),
+    col("elevationDrop", (r) => r.elevationDrop != null ? fmt.altitude(r.elevationDrop) : "—"),
     col("maxAlt", (r) => fmt.altitude(r.maxAlt)),
     col("maxAltGain", (r) => fmt.altitude(r.maxAltGain)),
     col("maxClimb", (r) => fmt.vario(r.maxClimb)),

@@ -1,6 +1,6 @@
 import type { Flight, ParsedTrack } from "./types";
 
-export const ANALYSIS_VERSION = 4;
+export const ANALYSIS_VERSION = 5;
 
 export interface GroundProfile {
   sampleIdx: number[];
@@ -30,6 +30,8 @@ export interface FlightRecord {
 
   maxAlt: number;
   maxAltGain: number;
+  /** Computed for flights imported from a track. */
+  elevationDrop?: number;
   maxClimb: number;
   maxSink: number;
 
@@ -80,6 +82,7 @@ export function buildFlightRecord(
 
     maxAlt: stats.maxAlt,
     maxAltGain: stats.maxAltGain,
+    elevationDrop: stats.elevationDrop,
     maxClimb: stats.maxClimb,
     maxSink: stats.maxSink,
 

@@ -11,7 +11,8 @@ upload, no backend, your track never leaves your device.
 ## Features
 
 - **Flight summary** — pilot, glider, launch site, date/time (with the recording
-  device's timezone), airtime, max altitude, max altitude gain, max sustained
+  device's timezone), airtime, max altitude, max altitude gain, elevation drop
+  from launch to landing, max sustained
   climb/sink, track length, straight-line distance, open ("free") distance and
   average ground speed.
 - **Thermals** (well-formed = **≥ 3 turns and climbing**): number of turns +

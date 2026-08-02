@@ -42,6 +42,8 @@ export function computeStats(
     if (alt - runningMin > maxAltGain) maxAltGain = alt - runningMin;
   }
 
+  const elevationDrop = fixes[start].alt - fixes[end].alt;
+
   const { maxClimb, maxSink } = sustainedClimbSink(fixes, d, start, end);
 
   const airtime = d.t[end] - d.t[start];
@@ -61,6 +63,7 @@ export function computeStats(
     maxAlt,
     minAlt,
     maxAltGain,
+    elevationDrop,
     maxClimb,
     maxSink,
     trackLength,

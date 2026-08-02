@@ -176,6 +176,8 @@ export interface FlightStats {
   minAlt: number;
   /** Largest altitude gain from any prior low point, metres. */
   maxAltGain: number;
+  /** Launch altitude minus landing altitude, metres (+ = landing lower). */
+  elevationDrop: number;
   maxClimb: number;
   /** Most negative vertical speed (reported as a positive sink value), m/s. */
   maxSink: number;
