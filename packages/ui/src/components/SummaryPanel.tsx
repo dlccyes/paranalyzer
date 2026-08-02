@@ -70,6 +70,10 @@ export function SummaryPanel({ flight, fmt, dateFormat = "dmy", children }: Prop
             `${stats.xcScore.points.toFixed(2)} pts`,
             stats.xcScore.type || undefined,
           )}
+          {stat(
+            "Straight glide ratio",
+            stats.straightGlideRatio != null ? stats.straightGlideRatio.toFixed(1) : "—",
+          )}
         </div>
       </div>
       {children}

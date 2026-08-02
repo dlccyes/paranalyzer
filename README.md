@@ -14,7 +14,7 @@ upload, no backend, your track never leaves your device.
   device's timezone), airtime, max altitude, max altitude gain, elevation drop
   from launch to landing, max sustained
   climb/sink, track length, straight-line distance, open ("free") distance and
-  average ground speed.
+  average ground speed, plus the straight launch-to-landing glide ratio.
 - **Thermals** (well-formed = **≥ 3 turns and climbing**): number of turns +
   direction, total climb, average climb rate, average circling radius, and
   per-thermal wind.

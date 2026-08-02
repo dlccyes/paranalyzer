@@ -51,6 +51,7 @@ export function computeStats(
   const straightDistance = haversine(
     fixes[start].lat, fixes[start].lon, fixes[end].lat, fixes[end].lon,
   );
+  const straightGlideRatio = elevationDrop > 1 ? straightDistance / elevationDrop : null;
 
   const timeInThermal = thermals.reduce((s, t) => s + t.duration, 0);
   const timeInGlide = glides.reduce((s, g) => s + g.duration, 0);
@@ -68,6 +69,7 @@ export function computeStats(
     maxSink,
     trackLength,
     straightDistance,
+    straightGlideRatio,
     freeDistance: freeDistance(fixes, start, end),
     avgSpeed: airtime > 0 ? trackLength / airtime : 0,
     wind: averageWind(thermals.map((t) => ({ wind: t.wind, weight: t.turns }))),

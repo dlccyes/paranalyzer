@@ -185,6 +185,8 @@ export interface FlightStats {
   trackLength: number;
   /** Straight-line distance takeoff → landing, metres. */
   straightDistance: number;
+  /** Straight takeoff-to-landing distance / elevation drop. */
+  straightGlideRatio: number | null;
   /** Open ("free") distance via up to 3 turnpoints, metres. */
   freeDistance: number;
   /** Average ground speed over airtime, m/s. */
